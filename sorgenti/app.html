@@ -171,7 +171,12 @@ h1 span{color:var(--muted)}
 .verify{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;overflow-y:auto;
   padding:calc(var(--st) + 16px) 18px calc(var(--sb) + 22px)}
 .verify.on{display:block}
-body:has(.verify.on){overflow:hidden}
+/* aperta dal QR: la verifica diventa la pagina vera (niente sovrapposizione), così Safari
+   la mostra a tutto schermo, nasconde le barre scorrendo e non lascia bande di altri colori */
+body.verifying{padding:0;min-height:100dvh;background:var(--bg)}
+body.verifying > :not(.verify):not(.toast){display:none !important}
+body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:visible;
+  padding:calc(env(safe-area-inset-top) + 16px) calc(env(safe-area-inset-right) + 18px) calc(env(safe-area-inset-bottom) + 28px) calc(env(safe-area-inset-left) + 18px)}
 .v-in{max-width:420px;margin:0 auto}
 .v-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .v-clock{font:700 13px/1 ui-monospace,"SF Mono",Menlo,monospace;color:var(--muted);letter-spacing:.04em}
@@ -309,7 +314,7 @@ body:has(.verify.on){overflow:hidden}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.7</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.8</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -668,10 +673,11 @@ function showVerify(raw){
     clearInterval(v._iv); tick(); v._iv = setInterval(tick, 1000);
   }
   if (!p){ const c = $("vClock"); if (c) c.textContent = new Date().toLocaleTimeString("it-IT"); }
-  $("vBack").onclick = () => { clearInterval(v._iv); v.className = "verify"; try { history.replaceState(null, "", location.pathname); } catch(e){} };
+  $("vBack").onclick = () => { clearInterval(v._iv); v.className = "verify"; document.body.classList.remove("verifying"); window.scrollTo(0, 0);
+    try { history.replaceState(null, "", location.pathname); } catch(e){} };
 }
 const passParam = (location.search.match(/[?&]pass=([A-Za-z0-9_-]+)/) || [])[1];
-if (passParam) showVerify(passParam);
+if (passParam){ document.body.classList.add("verifying"); showVerify(passParam); }
 
 paintHeader();
 if (mine && seats[mine]) select(mine); else mine = null;
