@@ -118,8 +118,7 @@ h1 span{color:var(--muted)}
   background:linear-gradient(rgba(6,8,13,.75),transparent);transition:opacity .3s}
 .stage.done .slot{overflow:visible}
 .stage.done .slot::before{opacity:0}
-.ticket{display:block;flex:none;transform:translateY(-101%);filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));
-  -webkit-touch-callout:default}
+.ticket{display:block;flex:none;transform:translateY(-101%);will-change:transform}
 .stage.printing .ticket{animation:print 1.9s cubic-bezier(.45,.05,.4,1) forwards}
 @keyframes print{
   0%{transform:translateY(-101%)} 12%{transform:translateY(-90%)} 16%{transform:translateY(-88%)}
@@ -189,7 +188,7 @@ h1 span{color:var(--muted)}
 
 <div class="stage" id="stage">
   <div class="printer" id="printer"><span>SERIANA</span></div>
-  <div class="slot"><img class="ticket" id="ticket" alt="Carta d'imbarco"></div>
+  <div class="slot"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas></div>
   <div class="actions">
     <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
     <div class="big" id="send" role="button">
@@ -205,13 +204,16 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.8</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.9</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
 
 
 <script>
+// ================= ERRORI VISIBILI =================
+window.addEventListener("error", e => { try { toast("Errore: " + e.message); } catch(_){} });
+window.addEventListener("unhandledrejection", e => { try { toast("Errore: " + (e.reason && e.reason.message || e.reason)); } catch(_){} });
 // ================= DATI =================
 const LAST = 13, DOOR_ROW = 7;
 const NEXT = {A:"B", B:"A", C:"D", D:"C", E:"C"};
@@ -227,7 +229,8 @@ const cfg = {
   from: store.get("from","LEF"), fromCity: store.get("fromCity","Leffe"),
   to: store.get("to","BGO"), toCity: store.get("toCity","Bergamo")
 };
-let mine = store.get("mySeat", null), shareFile = null, ticketURL = null;
+let mine = store.get("mySeat", null), shareFile = null, shareBlob = null;
+const shareCanvas = document.createElement("canvas");   // canvas riusato per l'immagine da inviare
 </script>
 <script>
 // ================= BIGLIETTO D'IMBARCO (canvas) =================
@@ -365,7 +368,7 @@ function drawTicket(o, opt = {}) {
   const H_MAP = H_MAPHEAD + cabH + 22;
   const TH = H_HEAD + H_ROUTE + H_FIELDS + H_SEAT + 22 + H_MAP + 22 + H_STUB;
   const W = TW + 2 * M, H = TH + 2 * M;
-  const cv = document.createElement("canvas"); cv.width = W * S; cv.height = H * S;
+  const cv = opt.canvas || document.createElement("canvas"); cv.width = W * S; cv.height = H * S; // riuso il canvas: niente perdite di memoria su iOS
   const c = cv.getContext("2d"); c.scale(S, S);
 
   // sfondo
@@ -562,37 +565,43 @@ function printHaptics(){
 const stage = $("stage");
 function printTicket(){
   if (!mine) return;
-  const { canvas } = drawTicket({ mine, ...cfg });              // immagine da inviare (con sfondo)
-  ticketURL = canvas.toDataURL("image/png");
-  canvas.toBlob(b => { try{ shareFile = new File([b], `carta-imbarco-${neighbour(mine)}.png`, {type:"image/png"}); }catch(e){ shareFile = b; } }, "image/png");
-  const img = $("ticket");
+  const tk = $("ticket");
+  try {
+    // 1) biglietto a schermo, disegnato direttamente nel canvas della pagina (nessun caricamento immagine)
+    drawTicket({ mine, ...cfg }, { bg:false, canvas: tk });
+    // 2) dimensioni calcolate dalla finestra, non dal layout
+    const r = tk.width / tk.height;
+    let h = Math.max(240, window.innerHeight - 200), w = h * r;
+    const maxW = window.innerWidth - 24; if (w > maxW) { w = maxW; h = w / r; }
+    tk.style.width = Math.round(w) + "px"; tk.style.height = Math.round(h) + "px";
+    $("printer").style.width = Math.round(Math.min(maxW, w * (360 / 396) + 28)) + "px";
+  } catch (e) { toast("Errore disegno: " + e.message); }
+
+  // 3) animazione: mostro la scena, poi al frame successivo faccio partire la stampa
   stage.className = "stage on";
-  let started = false;
-  const start = () => { if (started) return; started = true;
-    // dimensiono il biglietto per stare nello spazio e la stampante sulla larghezza della carta
-    const slot = img.parentElement, cw = slot.clientWidth, ch = slot.clientHeight;
-    const r = img.naturalWidth / img.naturalHeight;
-    let h = ch, w = h * r; if (w > cw) { w = cw; h = w / r; }
-    img.style.width = w + "px"; img.style.height = h + "px";
-    const paperW = w * (360 / 396);                              // la carta senza i margini trasparenti
-    $("printer").style.width = Math.min(cw, paperW + 28) + "px";
-    void img.offsetWidth;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     stage.classList.add("printing");
     printHaptics();
     clearTimeout(stage._t);
     stage._t = setTimeout(finish, 1950);
-  };
-  // se il biglietto è identico al precedente "load" non riparte: azzero la src e uso anche decode()
-  img.removeAttribute("src");
-  img.onload = start;
-  img.src = drawTicket({ mine, ...cfg }, { bg:false }).canvas.toDataURL("image/png"); // a schermo
-  if (img.decode) img.decode().then(start).catch(() => setTimeout(start, 50));
-  setTimeout(start, 400); // rete di sicurezza
+  }));
+
+  // 4) immagine da inviare, preparata in sottofondo
+  shareFile = null; shareBlob = null;
+  setTimeout(() => {
+    try {
+      drawTicket({ mine, ...cfg }, { canvas: shareCanvas });
+      shareCanvas.toBlob(b => {
+        shareBlob = b;
+        try { shareFile = new File([b], `carta-imbarco-${neighbour(mine)}.png`, { type:"image/png" }); } catch(e){}
+      }, "image/png");
+    } catch (e) { toast("Errore immagine: " + e.message); }
+  }, 120);
 }
 function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
 $("printBtn").append(hz());
-$("printBtn").onclick = () => setTimeout(printTicket, 90);
+$("printBtn").onclick = () => setTimeout(printTicket, 60);
 // anche "Invia" e il tocco per saltare la stampa danno il tic
 $("send").style.position = "relative"; $("send").append(hz());
 $("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stage.className = "stage"; };
@@ -606,9 +615,9 @@ async function sendTicket(){
     catch(e){ if (e.name === "AbortError") return; }
   }
   try {
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": fetch(ticketURL).then(r => r.blob()) })]);
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": shareBlob || new Promise(r => shareCanvas.toBlob(r, "image/png")) })]);
     toast("Biglietto copiato: incollalo in WhatsApp");
-  } catch(e){ toast("Tieni premuto sul biglietto per salvarlo"); }
+  } catch(e){ toast("Condivisione non disponibile qui"); }
 }
 
 // ================= IMPOSTAZIONI =================
