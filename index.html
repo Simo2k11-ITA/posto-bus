@@ -205,7 +205,7 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.7</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.8</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -567,7 +567,8 @@ function printTicket(){
   canvas.toBlob(b => { try{ shareFile = new File([b], `carta-imbarco-${neighbour(mine)}.png`, {type:"image/png"}); }catch(e){ shareFile = b; } }, "image/png");
   const img = $("ticket");
   stage.className = "stage on";
-  img.onload = () => {
+  let started = false;
+  const start = () => { if (started) return; started = true;
     // dimensiono il biglietto per stare nello spazio e la stampante sulla larghezza della carta
     const slot = img.parentElement, cw = slot.clientWidth, ch = slot.clientHeight;
     const r = img.naturalWidth / img.naturalHeight;
@@ -581,7 +582,12 @@ function printTicket(){
     clearTimeout(stage._t);
     stage._t = setTimeout(finish, 1950);
   };
+  // se il biglietto è identico al precedente "load" non riparte: azzero la src e uso anche decode()
+  img.removeAttribute("src");
+  img.onload = start;
   img.src = drawTicket({ mine, ...cfg }, { bg:false }).canvas.toDataURL("image/png"); // a schermo
+  if (img.decode) img.decode().then(start).catch(() => setTimeout(start, 50));
+  setTimeout(start, 400); // rete di sicurezza
 }
 function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
