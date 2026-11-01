@@ -127,6 +127,10 @@ h1 span{color:var(--muted)}
 .glare{position:absolute;pointer-events:none;opacity:0;transition:opacity .5s;
   background:radial-gradient(circle at var(--gx,50%) var(--gy,25%),rgba(255,255,255,.55),rgba(255,255,255,0) 55%);mix-blend-mode:soft-light}
 .stage.done.tilting .glare{opacity:1}
+.b3d{position:absolute;right:16px;top:calc(var(--st) + 12px);z-index:6;height:34px;padding:0 14px;border-radius:17px;
+  border:1px solid var(--line);background:rgba(24,30,43,.85);color:var(--ink);font:800 12px/1 inherit;font-family:inherit;letter-spacing:.12em;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.stage.done.can3d .b3d{opacity:1;pointer-events:auto}
 .ticket{display:block;flex:none;transform:translateY(-101%);will-change:transform}
 .stage.printing .ticket{animation:print 1.9s cubic-bezier(.45,.05,.4,1) forwards}
 @keyframes print{
@@ -233,6 +237,7 @@ h1 span{color:var(--muted)}
 
 <div class="stage" id="stage">
   <div class="printer" id="printer"><span>SERIANA</span></div>
+  <button class="b3d" id="b3d" aria-label="Attiva effetto 3D">3D</button>
   <div class="slot"><div class="tilt" id="tilt"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas><div class="glare" id="glare"></div></div></div>
   <div class="actions">
     <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
@@ -251,14 +256,14 @@ h1 span{color:var(--muted)}
   <div class="sec">PREFERENZE</div>
   <label class="pref"><span><b>Ricorda l'ultimo posto</b><small>All'apertura trovi già selezionato il posto della volta prima</small></span>
     <input type="checkbox" switch id="sRemember"></label>
-  <label class="pref" style="margin-top:10px"><span><b>Biglietto 3D</b><small>Il biglietto stampato si muove leggermente quando inclini l'iPhone</small></span>
+  <label class="pref" style="margin-top:10px"><span><b>Biglietto 3D</b><small>Il biglietto si muove quando inclini l'iPhone. Tocca "3D" sul biglietto: iOS chiede il permesso una volta per ogni apertura dell'app</small></span>
     <input type="checkbox" switch id="sTilt"></label>
   <div class="sec">VIAGGIO</div>
   <div class="f"><div><label>Il tuo nome</label><input id="sMe"></div><div><label>Lo mandi a</label><input id="sFriend"></div></div>
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.4</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.5</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -356,7 +361,11 @@ const clamp = (v, a) => Math.max(-a, Math.min(a, v));
 function askTilt(){            // iOS vuole il permesso, chiesto durante un tocco
   const D = window.DeviceOrientationEvent;
   if (D && typeof D.requestPermission === "function" && !tiltGranted){
-    D.requestPermission().then(r => { tiltGranted = r === "granted"; if (!tiltGranted) toast("Senza permesso movimento niente 3D"); }).catch(() => {});
+    D.requestPermission().then(r => {
+      tiltGranted = r === "granted";
+      if (tiltGranted) { stage.classList.remove("can3d"); if (stage.classList.contains("done")) startTilt(); }
+      else toast("Senza permesso movimento niente 3D");
+    }).catch(() => {});
   } else tiltGranted = true;
 }
 function onOrient(e){
@@ -379,6 +388,12 @@ function tiltLoop(){
   $("tilt").style.transform = `rotateX(${T.y.toFixed(2)}deg) rotateY(${T.x.toFixed(2)}deg)`;
   const g = $("glare"); g.style.setProperty("--gx", (50 + T.x * 5) + "%"); g.style.setProperty("--gy", (25 - T.y * 5) + "%");
   T.raf = requestAnimationFrame(tiltLoop);
+}
+const needsPermission = () => !!(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function");
+function offerTilt(){
+  if (!tiltOn) return;
+  if (!needsPermission() || tiltGranted) startTilt();
+  else stage.classList.add("can3d");          // niente popup automatico: lo chiedi tu toccando "3D"
 }
 function startTilt(){
   if (!tiltOn || T.run) return;
@@ -454,10 +469,11 @@ function printTicket(){
     } catch (e) { toast("Errore immagine: " + e.message); }
   }, 120);
 }
-function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); sizeGlare(); startTilt(); }
+function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); sizeGlare(); offerTilt(); }
+$("b3d").onclick = () => askTilt();
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
 $("printBtn").append(hz());
-$("printBtn").onclick = () => { if (tiltOn) askTilt(); setTimeout(printTicket, 60); };
+$("printBtn").onclick = () => setTimeout(printTicket, 60);
 // anche "Invia" e il tocco per saltare la stampa danno il tic
 $("send").style.position = "relative"; $("send").append(hz());
 $("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stopTilt(); stage.className = "stage"; };
