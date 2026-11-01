@@ -99,22 +99,30 @@ h1 span{color:var(--muted)}
 .stage{position:fixed;inset:0;z-index:20;background:rgba(6,8,13,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
   display:none;flex-direction:column;align-items:center;padding:calc(var(--st) + 12px) 16px calc(var(--sb) + 16px);overflow:hidden}
 .stage.on{display:flex}
-.printer{width:min(88vw,380px);height:26px;border-radius:13px;background:linear-gradient(#232B3B,#151A25);border:1px solid #2C3547;
-  position:relative;z-index:2;flex:none;transition:opacity .4s,transform .4s}
-.printer::before{content:"";position:absolute;left:18px;right:18px;top:11px;height:4px;border-radius:2px;background:#05070B}
-.printer::after{content:"";position:absolute;right:9px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--yel);
+/* stampante: il biglietto esce dalla fessura (linea scura) e scende davanti al bordo inferiore */
+.printer{width:min(90vw,380px);height:50px;border-radius:16px;position:relative;z-index:2;flex:none;
+  background:linear-gradient(180deg,#2A3346 0%,#1B2130 55%,#151A25 100%);border:1px solid #303A4F;
+  box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);transition:opacity .45s,transform .45s}
+.printer::before{content:"";position:absolute;left:12px;right:12px;top:30px;height:6px;border-radius:3px;
+  background:#010204;box-shadow:inset 0 2px 3px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07)}
+.printer::after{content:"";position:absolute;right:14px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--yel);
   box-shadow:0 0 8px var(--yel);animation:blink .5s steps(2) infinite}
-.stage.done .printer{opacity:0;transform:translateY(-20px)}
+.printer span{position:absolute;left:16px;top:9px;font-size:8px;font-weight:800;letter-spacing:.24em;color:#56617A}
+.stage.done .printer{opacity:0;transform:translateY(-24px)}
 .stage.done .printer::after{animation:none}
 @keyframes blink{50%{opacity:.2}}
-.slot{flex:1;min-height:0;width:100%;display:flex;justify-content:center;margin-top:-13px;overflow:hidden;position:relative;
-  transition:margin .5s}
-.stage.done .slot{overflow:visible;margin-top:-6px}
-.ticket{height:100%;max-width:100%;object-fit:contain;transform:translateY(-102%);filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));
+/* finestra di uscita: parte esattamente dalla fessura (50 - 17 = 33px = centro fessura) */
+.slot{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:flex-start;margin-top:-17px;
+  overflow:hidden;position:relative;z-index:3}
+.slot::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;z-index:2;pointer-events:none;
+  background:linear-gradient(rgba(6,8,13,.75),transparent);transition:opacity .3s}
+.stage.done .slot{overflow:visible}
+.stage.done .slot::before{opacity:0}
+.ticket{display:block;flex:none;transform:translateY(-101%);filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));
   -webkit-touch-callout:default}
 .stage.printing .ticket{animation:print 1.9s cubic-bezier(.45,.05,.4,1) forwards}
 @keyframes print{
-  0%{transform:translateY(-102%)} 12%{transform:translateY(-90%)} 16%{transform:translateY(-88%)}
+  0%{transform:translateY(-101%)} 12%{transform:translateY(-90%)} 16%{transform:translateY(-88%)}
   36%{transform:translateY(-62%)} 40%{transform:translateY(-60%)} 62%{transform:translateY(-30%)}
   66%{transform:translateY(-28%)} 100%{transform:translateY(0)}}
 .stage.done .ticket{transform:none;animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}
@@ -180,7 +188,7 @@ h1 span{color:var(--muted)}
 </div>
 
 <div class="stage" id="stage">
-  <div class="printer"></div>
+  <div class="printer" id="printer"><span>SERIANA</span></div>
   <div class="slot"><img class="ticket" id="ticket" alt="Carta d'imbarco"></div>
   <div class="actions">
     <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
@@ -197,7 +205,7 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.5</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.6</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -556,14 +564,24 @@ function printTicket(){
   if (!mine) return;
   const { canvas } = drawTicket({ mine, ...cfg });              // immagine da inviare (con sfondo)
   ticketURL = canvas.toDataURL("image/png");
-  $("ticket").src = drawTicket({ mine, ...cfg }, { bg:false }).canvas.toDataURL("image/png"); // a schermo
   canvas.toBlob(b => { try{ shareFile = new File([b], `carta-imbarco-${neighbour(mine)}.png`, {type:"image/png"}); }catch(e){ shareFile = b; } }, "image/png");
+  const img = $("ticket");
   stage.className = "stage on";
-  void stage.offsetWidth;                 // riavvia l'animazione
-  stage.classList.add("printing");
-  printHaptics();
-  clearTimeout(stage._t);
-  stage._t = setTimeout(finish, 1950);
+  img.onload = () => {
+    // dimensiono il biglietto per stare nello spazio e la stampante sulla larghezza della carta
+    const slot = img.parentElement, cw = slot.clientWidth, ch = slot.clientHeight;
+    const r = img.naturalWidth / img.naturalHeight;
+    let h = ch, w = h * r; if (w > cw) { w = cw; h = w / r; }
+    img.style.width = w + "px"; img.style.height = h + "px";
+    const paperW = w * (360 / 396);                              // la carta senza i margini trasparenti
+    $("printer").style.width = Math.min(cw, paperW + 28) + "px";
+    void img.offsetWidth;
+    stage.classList.add("printing");
+    printHaptics();
+    clearTimeout(stage._t);
+    stage._t = setTimeout(finish, 1950);
+  };
+  img.src = drawTicket({ mine, ...cfg }, { bg:false }).canvas.toDataURL("image/png"); // a schermo
 }
 function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
