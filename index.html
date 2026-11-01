@@ -151,7 +151,7 @@ h1 span{color:var(--muted)}
   66%{transform:translateY(-28%)} 100%{transform:translateY(0)}}
 .stage.done .ticket{transform:none;animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.025)}100%{transform:scale(1)}}
-.actions{width:100%;max-width:420px;display:flex;gap:10px;margin-top:14px;opacity:0;transform:translateY(16px);transition:.35s .1s;flex:none}
+.actions{position:relative;z-index:4;width:100%;max-width:420px;display:flex;gap:10px;margin-top:14px;opacity:0;transform:translateY(16px);transition:.35s .1s;flex:none}
 .stage.done .actions{opacity:1;transform:none}
 .big{flex:1;height:58px;border:0;border-radius:19px;background:var(--yel);color:var(--navy);font-size:17px;font-weight:800;
   display:flex;align-items:center;justify-content:center;gap:9px}
@@ -272,7 +272,7 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.2</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.3</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -2966,10 +2966,13 @@ function printTicket(){
   try {
     // 1) biglietto a schermo, disegnato direttamente nel canvas della pagina (nessun caricamento immagine)
     drawTicket(tOpt, { bg:false, canvas: tk });
-    // 2) dimensioni calcolate dalla finestra, non dal layout
-    const r = tk.width / tk.height;
-    let h = Math.max(240, window.innerHeight - 200), w = h * r;
-    const maxW = window.innerWidth - 24; if (w > maxW) { w = maxW; h = w / r; }
+    // 2) dimensioni: lo spazio reale tra stampante e tasti (scena già visibile), con riserva se non misurabile
+    stage.className = "stage on";
+    const slot = tk.parentElement, r = tk.width / tk.height;
+    let avail = slot.clientHeight - 12;                       // 12px di respiro sopra i tasti
+    if (!(avail > 200)) avail = window.innerHeight - 300;
+    let h = Math.max(220, avail), w = h * r;
+    const maxW = Math.min(slot.clientWidth || window.innerWidth, window.innerWidth) - 8; if (w > maxW) { w = maxW; h = w / r; }
     tk.style.width = Math.round(w) + "px"; tk.style.height = Math.round(h) + "px";
     $("printer").style.width = Math.round(Math.min(maxW, w * (360 / 396) + 28)) + "px";
   } catch (e) { toast("Errore disegno: " + e.message); }
