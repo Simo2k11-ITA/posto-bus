@@ -191,24 +191,70 @@ h1 span{color:var(--muted)}
 .ichint b{color:var(--ink)}
 .ichint button{margin-top:8px;border:0;border-radius:10px;background:var(--panel2);color:var(--ink);font:700 13px inherit;font-family:inherit;padding:8px 12px}
 .verify{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;overflow-y:auto;
-  padding:calc(var(--st) + 18px) 20px calc(var(--sb) + 24px)}
+  padding:calc(var(--st) + 16px) 18px calc(var(--sb) + 22px)}
 .verify.on{display:block}
-.v-in{max-width:440px;margin:0 auto}
-.v-badge{margin:26px auto 18px;width:112px;height:112px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  animation:vpop .6s cubic-bezier(.2,1.4,.4,1)}
-.v-badge svg{width:56px;height:56px}
-.v-ok .v-badge{background:#30D158;box-shadow:0 0 0 10px rgba(48,209,88,.15),0 0 60px rgba(48,209,88,.35)}
-.v-ko .v-badge{background:#FF453A;box-shadow:0 0 0 10px rgba(255,69,58,.15),0 0 60px rgba(255,69,58,.35)}
-@keyframes vpop{from{transform:scale(.4);opacity:0}}
-.v-title{text-align:center;font-size:28px;font-weight:800;letter-spacing:-.02em}
-.v-sub{text-align:center;color:var(--muted);font-size:14px;margin:6px 0 22px}
-.v-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:6px 18px}
-.v-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
-.v-row:last-child{border:0}
-.v-row span{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted)}
-.v-row b{font-size:16px;text-align:right}
-.v-seat b{font-size:26px;color:var(--yel)}
-.v-foot{text-align:center;color:var(--dim);font-size:11px;margin:18px 0}
+body:has(.verify.on){overflow:hidden}
+.v-in{max-width:420px;margin:0 auto}
+.v-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.v-clock{font:700 13px/1 ui-monospace,"SF Mono",Menlo,monospace;color:var(--muted);letter-spacing:.04em}
+/* striscia animata "live": prova che non è uno screenshot */
+.v-live{position:relative;height:46px;border-radius:14px;overflow:hidden;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:13px;font-weight:800;letter-spacing:.14em;color:#04210F}
+.v-ok .v-live{background:#30D158}
+.v-ko .v-live{background:#FF453A;color:#2B0503}
+.v-live::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 0 35%,rgba(255,255,255,.55) 50%,transparent 65% 100%);
+  transform:translateX(-100%);animation:sweep 2.2s ease-in-out infinite}
+@keyframes sweep{to{transform:translateX(100%)}}
+.v-live svg{width:20px;height:20px;position:relative}
+.v-live span{position:relative}
+.v-dot{width:8px;height:8px;border-radius:50%;background:currentColor;position:relative;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+/* carta */
+.v-card{background:#fff;color:#05164D;border-radius:22px;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.45);
+  animation:vin .6s cubic-bezier(.2,.9,.3,1)}
+@keyframes vin{from{transform:translateY(24px) scale(.97);opacity:0}}
+.v-head{background:linear-gradient(120deg,#05164D,#0A2472);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+.v-head .lg{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2em;font-size:12px}
+.v-head .lg i{width:30px;height:30px;border-radius:50%;background:#FFAD00;display:flex;align-items:center;justify-content:center}
+.v-head .lg i svg{width:17px;height:17px}
+.v-head small{font-size:9px;font-weight:800;letter-spacing:.2em;color:#FFAD00}
+.v-route{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:10px;padding:18px 18px 6px}
+.v-route b{font-size:36px;font-weight:850;letter-spacing:-.01em;line-height:1}
+.v-route em{display:block;font-style:normal;font-size:11px;color:#7B8499;font-weight:600;margin-top:4px}
+.v-route .r{text-align:right}
+.v-route .ln{height:2px;margin-bottom:22px;background:repeating-linear-gradient(90deg,#D9DEE8 0 4px,transparent 4px 8px);position:relative}
+.v-route .ln i{position:absolute;left:50%;top:50%;width:26px;height:26px;border-radius:50%;background:#FFAD00;transform:translate(-50%,-50%);
+  box-shadow:0 0 0 4px #fff;display:flex;align-items:center;justify-content:center}
+.v-route .ln i svg{width:15px;height:15px}
+.v-pax{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid #EEF1F6;margin-top:12px}
+.v-lbl{font-size:8.5px;font-weight:800;letter-spacing:.18em;color:#7B8499;display:block;margin-bottom:5px}
+.v-pax .nm{font-size:22px;font-weight:800;letter-spacing:.01em}
+.v-seat{background:#FFAD00;border-radius:16px;padding:10px 16px;text-align:center;min-width:92px}
+.v-seat .v-lbl{color:#05164D;opacity:.7}
+.v-seat b{font-size:34px;font-weight:850;line-height:1}
+.v-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 18px 16px}
+.v-grid b{font-size:14px;font-weight:750}
+.v-perf{position:relative;height:1px;margin:0 18px;background:repeating-linear-gradient(90deg,#D9DEE8 0 6px,transparent 6px 12px)}
+.v-perf::before,.v-perf::after{content:"";position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;background:var(--bg)}
+.v-perf::before{left:-29px}.v-perf::after{right:-29px}
+.v-valid{padding:16px 18px 18px}
+.v-times{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-top:2px}
+.v-times span{color:#7B8499;font-weight:600;font-size:11px;display:block}
+.v-bar{height:8px;border-radius:4px;background:#EEF1F6;margin:12px 0 8px;overflow:hidden}
+.v-bar i{display:block;height:100%;border-radius:4px;background:#30D158;transition:width .6s}
+.v-ko .v-bar i{background:#FF453A}
+.v-left{font-size:12px;font-weight:700;color:#1F8A3E}
+.v-ko .v-left{color:#C9302C}
+.v-code{display:flex;justify-content:space-between;align-items:center;background:#F4F6FA;padding:12px 18px;font-size:11px;color:#7B8499;font-weight:600}
+.v-code b{font:800 15px/1 ui-monospace,"SF Mono",Menlo,monospace;color:#05164D;letter-spacing:.12em}
+/* timbro */
+.v-stamp{position:absolute;right:18px;bottom:14px;transform:rotate(-12deg);border:3px solid currentColor;border-radius:10px;padding:6px 10px;
+  font-weight:900;font-size:15px;letter-spacing:.16em;opacity:.9;animation:stamp .5s .35s cubic-bezier(.2,1.6,.4,1) both}
+.v-ok .v-stamp{color:#1FA94A}
+.v-ko .v-stamp{color:#E5372D}
+@keyframes stamp{from{transform:rotate(-12deg) scale(2.2);opacity:0}}
+.v-ko .v-card{filter:saturate(.35)}
+.v-foot{text-align:center;color:var(--dim);font-size:11px;margin:16px 0 4px;line-height:1.5}
 .pref{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg);border:1px solid var(--line);
   border-radius:14px;padding:12px 14px}
 .pref b{display:block;font-size:15px;font-weight:650}
@@ -285,7 +331,7 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.6</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.7</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -3169,37 +3215,71 @@ document.addEventListener("touchend", e => {
 function showVerify(raw){
   let p = null;
   try { const a = unb64u(raw).split("~"); if (a[0] === "1" && a.length >= 12) p = a; } catch(e){}
-  const v = $("verify"); v.classList.add("on");
-  const head = `<div class="bar"><div class="brand"><i><svg viewBox="0 0 24 24" fill="#05164D"><rect x="5" y="3" width="14" height="15" rx="3"/><rect x="7" y="5" width="10" height="5" rx="1" fill="#FFAD00"/></svg></i>SERIANA AIRBUS · CONTROLLO</div></div>`;
-  const ok = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-  const ko = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>';
-  const back = `<button class="big" id="vBack" style="width:100%;margin-top:18px">Apri Posto Bus</button>`;
+  const v = $("verify");
+  const e = t => String(t).replace(/[<>&"]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;" }[c]));
+  const bus = '<svg viewBox="0 0 24 24" fill="#05164D"><rect x="5" y="3" width="14" height="15" rx="3"/><rect x="7" y="5" width="10" height="5" rx="1" fill="#FFAD00"/><circle cx="8.5" cy="14.5" r="1.3" fill="#FFAD00"/><circle cx="15.5" cy="14.5" r="1.3" fill="#FFAD00"/><rect x="6" y="18" width="3" height="3" rx="1"/><rect x="15" y="18" width="3" height="3" rx="1"/></svg>';
+  const ok = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const ko = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+  const top = `<div class="v-top"><div class="brand"><i>${bus}</i>CONTROLLO IMBARCO</div><div class="v-clock" id="vClock"></div></div>`;
+  const back = `<button class="big" id="vBack" style="width:100%;margin-top:14px">Apri Posto Bus</button>`;
+
   if (!p){
     v.className = "verify on v-ko";
-    v.innerHTML = `<div class="v-in">${head}<div class="v-badge">${ko}</div><div class="v-title">Biglietto non valido</div><div class="v-sub">Il codice non è leggibile</div>${back}</div>`;
+    v.innerHTML = `<div class="v-in">${top}<div class="v-live">${ko}<span>NON VALIDO</span></div>
+      <div class="v-foot">Il codice non è leggibile o è stato modificato.</div>${back}</div>`;
   } else {
     const [, friend, seat, me, mySeat, from, fromCity, to, toCity, t0, t1, code] = p;
-    const d0 = new Date(parseInt(t0, 36) * 60000), d1 = new Date(parseInt(t1, 36) * 60000), now = new Date();
-    const valid = now >= new Date(d0.getTime() - 3600000) && now <= d1;
-    const fmt = d => d.toLocaleDateString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric" }) + " · " + d.toLocaleTimeString("it-IT", { hour:"2-digit", minute:"2-digit" });
-    const e = t => String(t).replace(/[<>&"]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;" }[c]));
-    v.className = "verify on " + (valid ? "v-ok" : "v-ko");
-    v.innerHTML = `<div class="v-in">${head}
-      <div class="v-badge">${valid ? ok : ko}</div>
-      <div class="v-title">${valid ? "Biglietto valido" : "Biglietto scaduto"}</div>
-      <div class="v-sub">${valid ? "Imbarco confermato · buon viaggio" : "Questo biglietto non è più valido"}</div>
+    const d0 = new Date(parseInt(t0, 36) * 60000), d1 = new Date(parseInt(t1, 36) * 60000);
+    const L = seat.slice(-1), row = parseInt(seat, 10);
+    const side = { A:"Finestrino", B:"Corridoio", C:"Corridoio", D:"Finestrino", E:"Centrale" }[L] || "—";
+    const porta = row <= 6 ? "Davanti" : "Centrale";
+    const day = d => d.toLocaleDateString("it-IT", { day:"2-digit", month:"short" }).toUpperCase();
+    const hm = d => d.toLocaleTimeString("it-IT", { hour:"2-digit", minute:"2-digit" });
+    const now0 = new Date(), valid0 = now0 >= new Date(d0.getTime() - 3600000) && now0 <= d1;
+    v.className = "verify on " + (valid0 ? "v-ok" : "v-ko");
+    v.innerHTML = `<div class="v-in">${top}
+      <div class="v-live">${valid0 ? '<i class="v-dot"></i><span>VALIDO · CONTROLLO LIVE</span>' : ko + '<span>BIGLIETTO SCADUTO</span>'}</div>
       <div class="v-card">
-        <div class="v-row"><span>PASSEGGERO</span><b>${e(friend.toUpperCase())}</b></div>
-        <div class="v-row v-seat"><span>POSTO</span><b>${e(seat)}</b></div>
-        <div class="v-row"><span>ACCANTO A</span><b>${e(me)} · ${e(mySeat)}</b></div>
-        <div class="v-row"><span>TRATTA</span><b>${e(from)} ${e(fromCity)} → ${e(to)} ${e(toCity)}</b></div>
-        <div class="v-row"><span>VALIDO DAL</span><b>${fmt(d0)}</b></div>
-        <div class="v-row"><span>VALIDO FINO AL</span><b>${fmt(d1)}</b></div>
-        <div class="v-row"><span>CODICE</span><b>${e(code)}</b></div>
+        <div class="v-head"><div class="lg"><i>${bus}</i>SERIANA</div><small>BOARDING PASS</small></div>
+        <div class="v-route">
+          <div><b>${e(from)}</b><em>${e(fromCity)}</em></div><div class="ln"><i>${bus}</i></div><div class="r"><b>${e(to)}</b><em>${e(toCity)}</em></div>
+        </div>
+        <div class="v-pax">
+          <div><span class="v-lbl">PASSEGGERO</span><div class="nm">${e(friend.toUpperCase())}</div></div>
+          <div class="v-seat"><span class="v-lbl">POSTO</span><b>${e(seat)}</b></div>
+        </div>
+        <div class="v-grid">
+          <div><span class="v-lbl">FILA</span><b>${row || "—"}</b></div>
+          <div><span class="v-lbl">LATO</span><b>${side}</b></div>
+          <div><span class="v-lbl">PORTA</span><b>${porta}</b></div>
+          <div style="grid-column:1/4"><span class="v-lbl">ACCANTO A</span><b>${e(me)} · ${e(mySeat)}</b></div>
+          <div class="v-stamp">${valid0 ? "VALIDO" : "SCADUTO"}</div>
+        </div>
+        <div class="v-perf"></div>
+        <div class="v-valid">
+          <span class="v-lbl">VALIDITÀ</span>
+          <div class="v-times"><div><span>dal</span>${day(d0)} · ${hm(d0)}</div><div style="text-align:right"><span>al</span>${day(d1)} · ${hm(d1)}</div></div>
+          <div class="v-bar"><i id="vBar"></i></div>
+          <div class="v-left" id="vLeft"></div>
+        </div>
+        <div class="v-code"><span>Codice biglietto</span><b>${e(code)}</b></div>
       </div>
-      <div class="v-foot">Emesso da Seriana Airbus Lines · compagnia inventata, biglietto per gioco 🚌</div>${back}</div>`;
+      <div class="v-foot">Seriana Airbus Lines è una compagnia inventata.<br>Biglietto per gioco, fatto con 🚌 da ${e(me)}.</div>${back}</div>`;
+    const tick = () => {
+      const now = new Date();
+      const c = $("vClock"); if (!c) return clearInterval(v._iv);
+      c.textContent = now.toLocaleTimeString("it-IT");
+      const tot = d1 - d0, done = Math.min(1, Math.max(0, (now - d0) / tot));
+      $("vBar").style.width = (100 - done * 100) + "%";
+      const left = d1 - now;
+      if (left > 0){ const h = Math.floor(left / 3600000), m = Math.floor(left % 3600000 / 60000);
+        $("vLeft").textContent = "Valido ancora " + (h ? h + " h " : "") + m + " min"; }
+      else $("vLeft").textContent = "Scaduto " + d1.toLocaleDateString("it-IT") + " alle " + hm(d1);
+    };
+    clearInterval(v._iv); tick(); v._iv = setInterval(tick, 1000);
   }
-  $("vBack").onclick = () => { v.className = "verify"; try { history.replaceState(null, "", location.pathname); } catch(e){} };
+  if (!p){ const c = $("vClock"); if (c) c.textContent = new Date().toLocaleTimeString("it-IT"); }
+  $("vBack").onclick = () => { clearInterval(v._iv); v.className = "verify"; try { history.replaceState(null, "", location.pathname); } catch(e){} };
 }
 const passParam = (location.search.match(/[?&]pass=([A-Za-z0-9_-]+)/) || [])[1];
 if (passParam) showVerify(passParam);
