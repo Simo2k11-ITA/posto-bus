@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,7 +18,7 @@
   --st:env(safe-area-inset-top); --sb:env(safe-area-inset-bottom);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html{background:var(--bg)}
+html{background:var(--bg);touch-action:pan-y;-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Roboto,sans-serif;
   padding:calc(var(--st) + 14px) 18px calc(var(--sb) + 120px)}
@@ -569,6 +569,17 @@ $("saveSet").onclick = () => {
 $("sheet").onclick = e => { if (e.target.id === "sheet") $("sheet").classList.remove("on"); };
 
 function toast(t){ const x = $("toast"); x.textContent = t; x.classList.add("on"); clearTimeout(x._t); x._t = setTimeout(() => x.classList.remove("on"), 1800); }
+
+// ================= NIENTE ZOOM =================
+// iOS Safari ignora user-scalable=no: blocco pinch e doppio tocco a mano
+["gesturestart","gesturechange","gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive:false }));
+document.addEventListener("touchmove", e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, { passive:false });
+let lastTouch = 0;
+document.addEventListener("touchend", e => {
+  const now = Date.now();
+  if (now - lastTouch < 350 && !e.target.closest("input")) e.preventDefault();
+  lastTouch = now;
+}, { passive:false });
 
 paintHeader();
 if (mine && seats[mine]) select(mine); else mine = null;
