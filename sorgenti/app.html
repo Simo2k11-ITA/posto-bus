@@ -121,6 +121,12 @@ h1 span{color:var(--muted)}
   background:linear-gradient(rgba(6,8,13,.75),transparent);transition:opacity .3s}
 .stage.done .slot{overflow:visible}
 .stage.done .slot::before{opacity:0}
+/* effetto 3D: il biglietto si inclina seguendo l'iPhone */
+.slot{perspective:1100px}
+.tilt{position:relative;flex:none;will-change:transform;transform-style:preserve-3d}
+.glare{position:absolute;pointer-events:none;opacity:0;transition:opacity .5s;
+  background:radial-gradient(circle at var(--gx,50%) var(--gy,25%),rgba(255,255,255,.55),rgba(255,255,255,0) 55%);mix-blend-mode:soft-light}
+.stage.done.tilting .glare{opacity:1}
 .ticket{display:block;flex:none;transform:translateY(-101%);will-change:transform}
 .stage.printing .ticket{animation:print 1.9s cubic-bezier(.45,.05,.4,1) forwards}
 @keyframes print{
@@ -227,7 +233,7 @@ h1 span{color:var(--muted)}
 
 <div class="stage" id="stage">
   <div class="printer" id="printer"><span>SERIANA</span></div>
-  <div class="slot"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas></div>
+  <div class="slot"><div class="tilt" id="tilt"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas><div class="glare" id="glare"></div></div></div>
   <div class="actions">
     <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
     <div class="big" id="send" role="button">
@@ -245,12 +251,14 @@ h1 span{color:var(--muted)}
   <div class="sec">PREFERENZE</div>
   <label class="pref"><span><b>Ricorda l'ultimo posto</b><small>All'apertura trovi già selezionato il posto della volta prima</small></span>
     <input type="checkbox" switch id="sRemember"></label>
+  <label class="pref" style="margin-top:10px"><span><b>Biglietto 3D</b><small>Il biglietto stampato si muove leggermente quando inclini l'iPhone</small></span>
+    <input type="checkbox" switch id="sTilt"></label>
   <div class="sec">VIAGGIO</div>
   <div class="f"><div><label>Il tuo nome</label><input id="sMe"></div><div><label>Lo mandi a</label><input id="sFriend"></div></div>
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.3</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.4</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -341,6 +349,56 @@ function printHaptics(){
 
 // ================= STAMPA =================
 const stage = $("stage");
+// ================= BIGLIETTO 3D =================
+let tiltOn = store.get("tilt", "1") !== "0", tiltGranted = false, gotOrientation = false;
+const T = { tx:0, ty:0, x:0, y:0, base:null, raf:0, run:false };
+const clamp = (v, a) => Math.max(-a, Math.min(a, v));
+function askTilt(){            // iOS vuole il permesso, chiesto durante un tocco
+  const D = window.DeviceOrientationEvent;
+  if (D && typeof D.requestPermission === "function" && !tiltGranted){
+    D.requestPermission().then(r => { tiltGranted = r === "granted"; if (!tiltGranted) toast("Senza permesso movimento niente 3D"); }).catch(() => {});
+  } else tiltGranted = true;
+}
+function onOrient(e){
+  if (e.beta == null) return;
+  gotOrientation = true;
+  if (!T.base) T.base = { b: e.beta, g: e.gamma };
+  T.base.b += (e.beta - T.base.b) * 0.008;      // si ricentra piano se tieni il telefono fermo in una nuova posizione
+  T.base.g += (e.gamma - T.base.g) * 0.008;
+  T.ty = clamp(-(e.beta - T.base.b) * 0.35, 9);
+  T.tx = clamp((e.gamma - T.base.g) * 0.35, 9);
+}
+function onPointer(e){         // senza sensori (computer): segue il puntatore
+  if (gotOrientation) return;
+  T.tx = clamp((e.clientX / innerWidth - 0.5) * 16, 8);
+  T.ty = clamp(-(e.clientY / innerHeight - 0.5) * 16, 8);
+}
+function tiltLoop(){
+  if (!T.run) return;
+  T.x += (T.tx - T.x) * 0.12; T.y += (T.ty - T.y) * 0.12;
+  $("tilt").style.transform = `rotateX(${T.y.toFixed(2)}deg) rotateY(${T.x.toFixed(2)}deg)`;
+  const g = $("glare"); g.style.setProperty("--gx", (50 + T.x * 5) + "%"); g.style.setProperty("--gy", (25 - T.y * 5) + "%");
+  T.raf = requestAnimationFrame(tiltLoop);
+}
+function startTilt(){
+  if (!tiltOn || T.run) return;
+  T.base = null; T.tx = T.ty = 0; T.run = true;
+  window.addEventListener("deviceorientation", onOrient);
+  stage.addEventListener("pointermove", onPointer);
+  stage.classList.add("tilting");
+  tiltLoop();
+}
+function stopTilt(){
+  T.run = false; cancelAnimationFrame(T.raf);
+  window.removeEventListener("deviceorientation", onOrient);
+  stage.removeEventListener("pointermove", onPointer);
+  T.x = T.y = 0; $("tilt").style.transform = ""; stage.classList.remove("tilting");
+}
+function sizeGlare(){          // la luce copre solo la carta, non i margini trasparenti
+  const tk = $("ticket"), w = tk.offsetWidth, k = w / 396, g = $("glare");
+  g.style.left = g.style.right = g.style.top = g.style.bottom = (18 * k) + "px"; g.style.borderRadius = (22 * k) + "px";
+}
+
 // ================= QR DI VERIFICA =================
 const SITE = "https://simo2k11-ita.github.io/posto-bus/";
 const b64u = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -358,6 +416,7 @@ function newPass(){
 function printTicket(){
   if (!mine) return;
   const tk = $("ticket");
+  stopTilt();
   const pass = newPass();                 // QR diverso a ogni stampa
   const tOpt = { mine, ...cfg, qr: pass.url, code: pass.code };
   try {
@@ -365,7 +424,7 @@ function printTicket(){
     drawTicket(tOpt, { bg:false, canvas: tk });
     // 2) dimensioni: lo spazio reale tra stampante e tasti (scena già visibile), con riserva se non misurabile
     stage.className = "stage on";
-    const slot = tk.parentElement, r = tk.width / tk.height;
+    const slot = tk.closest(".slot"), r = tk.width / tk.height;
     let avail = slot.clientHeight - 12;                       // 12px di respiro sopra i tasti
     if (!(avail > 200)) avail = window.innerHeight - 300;
     let h = Math.max(220, avail), w = h * r;
@@ -395,13 +454,13 @@ function printTicket(){
     } catch (e) { toast("Errore immagine: " + e.message); }
   }, 120);
 }
-function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
+function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); sizeGlare(); startTilt(); }
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
 $("printBtn").append(hz());
-$("printBtn").onclick = () => setTimeout(printTicket, 60);
+$("printBtn").onclick = () => { if (tiltOn) askTilt(); setTimeout(printTicket, 60); };
 // anche "Invia" e il tocco per saltare la stampa danno il tic
 $("send").style.position = "relative"; $("send").append(hz());
-$("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stage.className = "stage"; };
+$("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stopTilt(); stage.className = "stage"; };
 
 // ================= INVIO =================
 $("send").onclick = () => setTimeout(sendTicket, 60);
@@ -419,7 +478,12 @@ async function sendTicket(){
 
 // ================= IMPOSTAZIONI =================
 const fields = { sMe:"me", sFriend:"friend", sFrom:"from", sFromCity:"fromCity", sTo:"to", sToCity:"toCity" };
-$("gear").onclick = () => { for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; paintIcons(); $("sheet").classList.add("on"); };
+$("gear").onclick = () => { for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; $("sTilt").checked = tiltOn; paintIcons(); $("sheet").classList.add("on"); };
+$("sTilt").addEventListener("change", e => {
+  tiltOn = e.target.checked; store.set("tilt", tiltOn ? "1" : "0");
+  if (tiltOn) askTilt();
+  toast(tiltOn ? "Biglietto 3D attivo" : "Biglietto 3D spento");
+});
 $("sRemember").addEventListener("change", e => {
   remember = e.target.checked; store.set("remember", remember ? "1" : "0");
   toast(remember ? "Ricorderò il tuo posto" : "Ogni volta partirai da zero");
