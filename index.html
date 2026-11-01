@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Il mio posto sul pullman</title>
+<style>
+  :root{
+    --bg:#f4f6f7; --card:#fff; --ink:#1b2428; --muted:#6b7780; --line:#dde3e6;
+    --seat:#e9eef0; --seat-ink:#4a565c; --accent:#00a3b4; --accent-ink:#fff;
+    --friend:#ff7a59; --door:#cfd8dc;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#111618;--card:#1a2124;--ink:#eef2f3;--muted:#93a0a6;--line:#2a3438;
+      --seat:#253034;--seat-ink:#b9c5ca;--door:#3a464b;}
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);height:100dvh;overflow:hidden;display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px)}
+  header{margin:0 0 10px;flex:none}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .banner{flex:none;margin:0 0 10px;background:var(--friend);color:#fff;border-radius:14px;
+    padding:12px 14px;font-size:15px;line-height:1.35;display:none}
+  .banner b{font-size:17px}
+  .banner button{margin-top:8px;background:rgba(255,255,255,.22);color:#fff;border:0;border-radius:9px;
+    padding:7px 11px;font-size:13px;font-weight:600}
+  .bus{flex:1;min-height:0;width:100%;background:var(--card);border:2px solid var(--line);
+    border-radius:44px 44px 22px 22px;padding:14px 12px 12px;display:flex;flex-direction:column}
+  .front{flex:none;display:grid;grid-template-columns:1fr 1fr 18px 1fr 1fr;gap:6px;margin-bottom:8px;align-items:end}
+  .driver{grid-column:1/3;height:clamp(28px,5vh,44px);border-radius:12px;background:var(--seat);display:flex;align-items:center;
+    justify-content:center;font-size:11px;color:var(--muted);gap:6px}
+  .wheel{width:18px;height:18px;border:3px solid var(--muted);border-radius:50%}
+  .door{background:repeating-linear-gradient(90deg,var(--door) 0 4px,transparent 4px 8px);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.06em}
+  .front .door{grid-column:4/6;height:clamp(28px,5vh,44px)}
+  .grid{display:grid;grid-template-columns:1fr 1fr 18px 1fr 1fr;gap:6px;flex:12 1 66px;min-height:0;grid-template-rows:repeat(12,1fr)}
+  .rownum{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)}
+  .seat{min-height:0;height:100%;border:0;border-radius:10px 10px 6px 6px;background:var(--seat);color:var(--seat-ink);
+    font:600 clamp(11px,3.4vw,15px)/1 inherit;font-family:inherit;cursor:pointer;touch-action:manipulation;position:relative;transition:transform .12s,background .15s}
+  .seat:active{transform:scale(.94)}
+  .seat.me{background:var(--accent);color:var(--accent-ink)}
+  .seat.friend{background:transparent;box-shadow:inset 0 0 0 2.5px var(--friend);color:var(--friend)}
+  .seat.her{background:var(--friend);color:#fff}
+  .seat.you{background:transparent;box-shadow:inset 0 0 0 2.5px var(--accent);color:var(--accent)}
+  .seat .tag{position:absolute;top:-7px;left:50%;transform:translateX(-50%);font-size:8.5px;font-weight:700;
+    padding:2px 4px;border-radius:5px;white-space:nowrap;letter-spacing:.02em}
+  .seat.me .tag,.seat.you .tag{background:var(--accent);color:#fff}
+  .seat.friend .tag,.seat.her .tag{background:var(--friend);color:#fff}
+  .gap{grid-column:4/6}
+  .back{grid-template-columns:repeat(5,1fr);grid-template-rows:1fr;margin-top:6px;flex:1 1 0}
+  .mid .door{height:100%}
+  .legend{flex:none;margin:6px 4px 0;display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+  .sheet{flex:none;margin:10px calc(-12px - env(safe-area-inset-right)) 0 calc(-12px - env(safe-area-inset-left));
+    background:var(--card);border-top:1px solid var(--line);
+    padding:14px calc(16px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    box-shadow:0 -6px 24px rgba(0,0,0,.08)}
+  .sheet-in{max-width:600px;margin:0 auto}
+  .empty{color:var(--muted);font-size:15px;text-align:center;padding:10px 0}
+  .info{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .info .big{font-size:26px;font-weight:700;color:var(--accent)}
+  .info .desc{font-size:14px;color:var(--muted)}
+  .friendline{font-size:14px;margin-bottom:12px}
+  .friendline input{border:0;border-bottom:1.5px dashed var(--line);background:transparent;color:var(--friend);
+    font:600 14px inherit;font-family:inherit;width:90px;padding:0 2px}
+  .actions{display:flex;gap:8px}
+  .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;
+    padding:13px;font:600 15px inherit;font-family:inherit;text-decoration:none;cursor:pointer}
+  .wa{background:#25d366;color:#fff}
+  .copy{background:var(--seat);color:var(--ink);flex:.7}
+  .actions + .actions{margin-top:8px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+  .modal.on{display:flex}
+  .modal-in{background:var(--card);width:100%;max-width:420px;border-radius:20px 20px 0 0;
+    padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+  .modal img{display:block;max-width:100%;max-height:58vh;margin:0 auto 12px;border-radius:12px;border:1px solid var(--line)}
+  .hint{font-size:13px;color:var(--muted);text-align:center;margin:0 0 12px;line-height:1.4}
+  .close{background:transparent;color:var(--muted);flex:none;padding:13px 6px}
+  .toast{z-index:20;position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 12px);transform:translateX(-50%);background:var(--ink);color:var(--bg);
+    padding:8px 14px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🚌 Dove sono seduto</h1>
+  <p class="sub">Tocca il tuo posto e mandalo a <span class="fname">Benny</span>.</p>
+</header>
+
+<div class="banner" id="banner">
+  Sono al posto <b id="bSeat"></b><br>
+  Il tuo è quello accanto: <b id="bHer"></b> 👋
+  <br><button id="bReset">Scegli tu un posto</button>
+</div>
+
+<div class="bus">
+  <div class="front">
+    <div class="driver"><span class="wheel"></span>autista</div>
+    <div></div>
+    <div class="door">porta</div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="grid back" id="back"></div>
+</div>
+<div class="legend"><span>◀ sinistra</span><span>retro del pullman</span><span>destra ▶</span></div>
+
+<div class="sheet"><div class="sheet-in" id="sheet"></div></div>
+<div class="modal" id="modal"><div class="modal-in">
+  <img id="mapImg" alt="Mappa del pullman con il posto selezionato">
+  <p class="hint">Tieni premuto sull'immagine → <b>Copia</b> o <b>Salva</b>, poi incollala o allegala nella chat con <span class="fname">Benny</span>.</p>
+  <div class="actions">
+    <button class="btn wa" id="shareImg">Condividi immagine</button>
+    <button class="btn copy" id="copyImg">Copia</button>
+  </div>
+  <div class="actions"><button class="btn close" id="closeModal" style="flex:1">Chiudi</button></div>
+</div></div>
+<div class="toast" id="toast">Messaggio copiato</div>
+
+<script>
+// Layout tipo pullman extraurbano 12 m (2+2), porta centrale a destra alla fila 7, ultima fila da 5
+const ROWS = 13, DOOR_ROW = 7, LAST = 13;
+const SIDE = {A:"finestrino, lato sinistro", B:"corridoio, lato sinistro", C:"corridoio, lato destro", D:"finestrino, lato destro", E:"centrale, ultima fila"};
+const NEXT = {A:"B", B:"A", C:"D", D:"C", E:"C"};
+
+// Nome del Comando Rapido che riceve l'immagine (deve essere identico nell'app Comandi)
+const SHORTCUT = "Invia Posto";
+const QUICK = location.hash === "#comando";   // aperto dal Comando Rapido: un tocco = invio
+let mine = null, received = null;
+let friend = "Benny";
+try { friend = localStorage.getItem("friendName") || "Benny"; mine = localStorage.getItem("mySeat"); } catch(e){}
+
+const grid = document.getElementById("grid"), back = document.getElementById("back");
+function seatBtn(id){
+  const b = document.createElement("button");
+  b.className = "seat"; b.dataset.id = id; b.textContent = id;
+  b.onclick = () => pick(id);
+  return b;
+}
+["A","B","E","C","D"].forEach(l => back.appendChild(seatBtn(LAST+l)));
+for (let r = 1; r < LAST; r++){
+  ["A","B"].forEach(l => grid.appendChild(seatBtn(r+l)));
+  { const n = document.createElement("div"); n.className="rownum"; n.textContent=r; grid.appendChild(n); }
+  if (r === DOOR_ROW){
+    const d = document.createElement("div"); d.className="gap mid"; d.innerHTML='<div class="door">porta</div>'; grid.appendChild(d);
+  } else ["C","D"].forEach(l => grid.appendChild(seatBtn(r+l)));
+}
+const valid = id => !!document.querySelector(`.seat[data-id="${id}"]`);
+const neighbour = id => { const r = id.slice(0,-1), l = id.slice(-1); return r + NEXT[l]; };
+const describe = id => `fila ${id.slice(0,-1)}, ${SIDE[id.slice(-1)]}`;
+
+function message(id){
+  const n = neighbour(id);
+  return `🚌 Sono sul pullman al posto ${id} (${describe(id)}). Il posto accanto, ${n}, è per te!`;
+}
+
+function render(){
+  document.querySelectorAll(".seat").forEach(s => { s.className="seat"; s.innerHTML = s.dataset.id; });
+  const tag = (id, cls, label) => { const s = document.querySelector(`.seat[data-id="${id}"]`); if(!s) return;
+    s.classList.add(cls); s.innerHTML = `${id}<span class="tag">${label}</span>`; };
+  document.querySelectorAll(".fname").forEach(e => e.textContent = friend);
+
+  const banner = document.getElementById("banner");
+  if (received){
+    tag(received, "her", "amico");
+    tag(neighbour(received), "you", "tu");
+    document.getElementById("bSeat").textContent = received;
+    document.getElementById("bHer").textContent = neighbour(received);
+    banner.style.display = "block";
+  } else banner.style.display = "none";
+
+  const sheet = document.getElementById("sheet");
+  if (!mine || received){
+    sheet.innerHTML = received
+      ? `<div class="empty">Cerca il posto <b>${neighbour(received)}</b>, quello con il bordo blu.</div>`
+      : `<div class="empty">${QUICK ? "⚡ Tocca il tuo posto: lo invio subito" : "Tocca il posto dove sei seduto"}</div>`;
+    return;
+  }
+  tag(mine, "me", "io");
+  tag(neighbour(mine), "friend", friend.slice(0,8));
+  const wa = "https://wa.me/?text=" + encodeURIComponent(message(mine));
+  sheet.innerHTML = `
+    <div class="info"><span class="big">${mine}</span><span class="desc">${describe(mine)}</span></div>
+    <div class="friendline">Posto per <input id="fn" value="${friend.replace(/"/g,"")}" maxlength="16">: <b style="color:var(--friend)">${neighbour(mine)}</b></div>
+    <div class="actions">
+      <button class="btn wa" id="quick">⚡ Invia immagine a ${friend.replace(/[<>&"]/g,"")}</button>
+      <a class="btn copy" href="${wa}" target="_blank" rel="noopener" style="flex:.5">Solo testo</a>
+    </div>
+    <div class="actions">
+      <button class="btn copy" id="img" style="flex:1">📷 Immagine mappa</button>
+      <button class="btn copy" id="cp">Copia testo</button>
+    </div>`;
+  document.getElementById("img").onclick = openImage;
+  document.getElementById("quick").onclick = () => quickSend();
+  document.getElementById("fn").oninput = e => {
+    friend = e.target.value.trim() || "Benny";
+    try{ localStorage.setItem("friendName", friend); }catch(_){}
+    document.querySelectorAll(".fname").forEach(x => x.textContent = friend);
+    const t = document.querySelector(".seat.friend .tag"); if (t) t.textContent = friend.slice(0,8);
+    const q=document.getElementById("quick"); if(q) q.textContent = "⚡ Invia immagine a " + friend;
+  };
+  document.getElementById("cp").onclick = async () => {
+    try { await navigator.clipboard.writeText(message(mine)); toast("Messaggio copiato"); }
+    catch(e){ toast("Copia non riuscita"); }
+  };
+}
+
+function pick(id){
+  received = null;
+  mine = (mine === id) ? null : id;
+  try{ mine ? localStorage.setItem("mySeat", mine) : localStorage.removeItem("mySeat"); }catch(e){}
+  if (QUICK){ mine = id; try{ localStorage.setItem("mySeat", mine); }catch(e){} render(); quickSend(id); return; }
+  try{ history.replaceState(null, "", mine ? "#posto-"+mine : location.pathname); }catch(e){}
+  render();
+}
+
+// ---------- Immagine della mappa ----------
+function rr(c,x,y,w,h,r){const R=typeof r==="number"?[r,r,r,r]:r;c.beginPath();c.moveTo(x+R[0],y);c.lineTo(x+w-R[1],y);
+  c.quadraticCurveTo(x+w,y,x+w,y+R[1]);c.lineTo(x+w,y+h-R[2]);c.quadraticCurveTo(x+w,y+h,x+w-R[2],y+h);
+  c.lineTo(x+R[3],y+h);c.quadraticCurveTo(x,y+h,x,y+h-R[3]);c.lineTo(x,y+R[0]);c.quadraticCurveTo(x,y,x+R[0],y);c.closePath();}
+function drawMap(me, fr){
+  const S=3, W=360, F='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  const AC="#00a3b4", FR="#ff7a59", SEAT="#e9eef0", INK="#1b2428", MU="#6b7780";
+  const sw=55.5, sh=58, g=7, ai=18, bx=30, bw=300, pad=16, top=96;
+  const busH = 18 + 44 + 14 + 12*sh + 11*g + g + sh + 16;
+  const H = top + busH + 46;
+  const cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
+  const c=cv.getContext("2d"); c.scale(S,S);
+  c.fillStyle="#f4f6f7"; c.fillRect(0,0,W,H);
+  c.fillStyle=INK; c.font=`700 22px ${F}`; c.textAlign="left"; c.textBaseline="alphabetic";
+  c.fillText(`🚌 Sono al posto ${me}`,20,38);
+  c.font=`500 14px ${F}`; c.fillStyle=MU; c.fillText(describe(me),20,60);
+  c.fillStyle=FR; c.font=`600 14px ${F}`; c.fillText(`${friend}: posto ${fr}`,20,80);
+  // bus
+  rr(c,bx,top,bw,busH,[46,46,22,22]); c.fillStyle="#fff"; c.fill(); c.lineWidth=2; c.strokeStyle="#dde3e6"; c.stroke();
+  const x0=bx+pad, colX=i=>x0 + i*(sw+g) + (i>=2 ? ai+g-g : 0) + (i>=2? g:0) - (i>=2? g:0);
+  const cx=[x0, x0+sw+g, x0+2*sw+2*g+ai, x0+3*sw+3*g+ai];
+  let y=top+18;
+  // driver + door
+  rr(c,cx[0],y,sw*2+g,44,12); c.fillStyle=SEAT; c.fill();
+  c.strokeStyle=MU; c.lineWidth=3; c.beginPath(); c.arc(cx[0]+30,y+22,9,0,7); c.stroke();
+  c.fillStyle=MU; c.font=`500 11px ${F}`; c.textAlign="left"; c.textBaseline="middle"; c.fillText("autista",cx[0]+46,y+22);
+  const door=(x,yy,w,h)=>{ c.save(); rr(c,x,yy,w,h,8); c.clip(); c.fillStyle="#cfd8dc";
+    for(let i=0;i<w;i+=8) c.fillRect(x+i,yy,4,h); c.restore(); c.fillStyle=MU; c.font=`600 10px ${F}`; c.textAlign="center"; c.fillText("PORTA",x+w/2,yy+h/2); };
+  door(cx[2],y,sw*2+g,44);
+  y+=44+14;
+  const seat=(id,x,yy,w)=>{
+    const isMe=id===me, isFr=id===fr;
+    rr(c,x,yy,w,sh,[10,10,6,6]);
+    if(isMe){c.fillStyle=AC;c.fill();} else if(isFr){c.fillStyle="#fff";c.fill();c.lineWidth=3;c.strokeStyle=FR;c.stroke();}
+    else {c.fillStyle=SEAT;c.fill();}
+    c.fillStyle=isMe?"#fff":isFr?FR:"#4a565c"; c.font=`${isMe||isFr?700:600} 13px ${F}`; c.textAlign="center"; c.textBaseline="middle";
+    c.fillText(id,x+w/2,yy+sh/2);
+    if(isMe||isFr){ const label=isMe?"IO":friend.slice(0,8).toUpperCase(); c.font=`700 9px ${F}`;
+      const tw=c.measureText(label).width+10; rr(c,x+w/2-tw/2,yy-8,tw,15,5); c.fillStyle=isMe?AC:FR; c.fill();
+      c.fillStyle="#fff"; c.fillText(label,x+w/2,yy-0.5); }
+  };
+  for(let r=1;r<LAST;r++){
+    seat(r+"A",cx[0],y,sw); seat(r+"B",cx[1],y,sw);
+    c.fillStyle=MU; c.font=`500 10px ${F}`; c.textAlign="center"; c.textBaseline="middle"; c.fillText(r,cx[1]+sw+g+ai/2,y+sh/2);
+    if(r===DOOR_ROW) door(cx[2],y,sw*2+g,sh); else { seat(r+"C",cx[2],y,sw); seat(r+"D",cx[3],y,sw); }
+    y+=sh+g;
+  }
+  const bw5=(bw-2*pad-4*g)/5;
+  ["A","B","E","C","D"].forEach((l,i)=>seat(LAST+l,x0+i*(bw5+g),y,bw5));
+  c.fillStyle=MU; c.font=`500 11px ${F}`; c.textBaseline="alphabetic";
+  c.textAlign="left"; c.fillText("◀ sinistra",bx,top+busH+24);
+  c.textAlign="center"; c.fillText("davanti = autista",W/2,top+busH+24);
+  c.textAlign="right"; c.fillText("destra ▶",bx+bw,top+busH+24);
+  return cv;
+}
+let imgBlob=null;
+function openImage(){
+  const cv=drawMap(mine, neighbour(mine));
+  document.getElementById("mapImg").src=cv.toDataURL("image/png");
+  imgBlob=null; cv.toBlob(b=>imgBlob=b,"image/png");
+  document.getElementById("modal").classList.add("on");
+}
+document.getElementById("closeModal").onclick=()=>document.getElementById("modal").classList.remove("on");
+document.getElementById("modal").onclick=e=>{ if(e.target.id==="modal") e.currentTarget.classList.remove("on"); };
+document.getElementById("shareImg").onclick=async()=>{
+  try{
+    const file=new File([imgBlob],`posto-${mine}.png`,{type:"image/png"});
+    if(!navigator.canShare||!navigator.canShare({files:[file]})) throw 0;
+    await navigator.share({files:[file],text:message(mine)});
+  }catch(e){ if(e&&e.name==="AbortError") return; toast("Qui non si può: tieni premuto sull'immagine"); }
+};
+document.getElementById("copyImg").onclick=async()=>{
+  try{
+    await navigator.clipboard.write([new ClipboardItem({"image/png": imgBlob ? imgBlob : new Promise(r=>drawMap(mine,neighbour(mine)).toBlob(r,"image/png"))})]);
+    toast("Immagine copiata: incollala in WhatsApp");
+  }catch(e){ toast("Copia non riuscita: tieni premuto sull'immagine"); }
+};
+
+// Copia l'immagine negli appunti e passa la palla al Comando Rapido
+function quickSend(id){
+  const seat = id || mine; if(!seat) return;
+  const blobP = new Promise(r => drawMap(seat, neighbour(seat)).toBlob(r, "image/png"));
+  const url = "shortcuts://run-shortcut?name=" + encodeURIComponent(SHORTCUT) + "&input=text&text=" + encodeURIComponent(seat);
+  try{
+    navigator.clipboard.write([new ClipboardItem({"image/png": blobP})])
+      .then(() => { toast("Immagine pronta, apro Comandi…"); setTimeout(() => location.href = url, 150); })
+      .catch(() => { toast("Non riesco a copiare: uso il metodo manuale"); openImage(); });
+  }catch(e){ openImage(); }
+}
+
+function toast(t){ const el = document.getElementById("toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),1600); }
+
+function readHash(){
+  const m = location.hash.match(/^#posto-(\d{1,2}[A-E])$/i);
+  if (m && valid(m[1].toUpperCase())) received = m[1].toUpperCase();
+}
+document.getElementById("bReset").onclick = () => { received = null; try{history.replaceState(null,"",location.pathname)}catch(e){} render(); };
+window.addEventListener("hashchange", () => { readHash(); render(); });
+readHash();
+render();
+</script>
+</body>
+</html>
