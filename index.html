@@ -198,6 +198,8 @@ h1 span{color:var(--muted)}
 </div></div>
 
 <div class="toast" id="toast"></div>
+<!-- iOS non supporta navigator.vibrate: un interruttore nativo nascosto produce il "tic" della Taptic Engine -->
+<label id="hapt" style="position:absolute;left:-9999px;opacity:0"><input type="checkbox" switch></label>
 
 <script>
 // ================= DATI =================
@@ -506,6 +508,7 @@ bus.addEventListener("click", e => { const b = e.target.closest(".seat"); if (b)
 
 function select(id){
   if (mine && seats[mine]) seats[mine].classList.remove("sel");
+  haptic(8);
   mine = id; store.set("mySeat", id);
   seats[id].classList.add("sel");
   $("dSeat").textContent = id; $("dSide").textContent = SIDE[id.slice(-1)];
@@ -523,6 +526,21 @@ function paintHeader(){
   document.querySelectorAll(".fname").forEach(e => e.textContent = cfg.friend);
 }
 
+// ================= VIBRAZIONE =================
+const hapt = $("hapt");
+function haptic(ms = 12){
+  if (navigator.vibrate) { try { navigator.vibrate(ms); return; } catch(e){} }
+  try { hapt.click(); } catch(e){}
+}
+let hTimers = [];
+function printHaptics(){
+  hTimers.forEach(clearTimeout); hTimers = [];
+  // tratti in cui il biglietto avanza (in ms, come l'animazione da 1.9 s)
+  const moves = [[0, 228], [304, 684], [760, 1178], [1254, 1900]];
+  for (const [a, b] of moves) for (let t = a; t < b; t += 65) hTimers.push(setTimeout(() => haptic(10), t));
+  hTimers.push(setTimeout(() => haptic(35), 1950));        // colpo finale: biglietto pronto
+}
+
 // ================= STAMPA =================
 const stage = $("stage");
 function printTicket(){
@@ -534,13 +552,14 @@ function printTicket(){
   stage.className = "stage on";
   void stage.offsetWidth;                 // riavvia l'animazione
   stage.classList.add("printing");
+  printHaptics();
   clearTimeout(stage._t);
   stage._t = setTimeout(finish, 1950);
 }
 function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
-$("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); finish(); } });
+$("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
 $("printBtn").onclick = printTicket;
-$("closeStage").onclick = () => { stage.className = "stage"; };
+$("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stage.className = "stage"; };
 
 // ================= INVIO =================
 $("send").onclick = async () => {
