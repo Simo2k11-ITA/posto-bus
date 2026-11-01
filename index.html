@@ -205,7 +205,7 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.6</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.7</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -586,13 +586,14 @@ function printTicket(){
 function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
 $("printBtn").append(hz());
-$("printBtn").onclick = printTicket;
+$("printBtn").onclick = () => setTimeout(printTicket, 90);
 // anche "Invia" e il tocco per saltare la stampa danno il tic
 $("send").style.position = "relative"; $("send").append(hz());
 $("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stage.className = "stage"; };
 
 // ================= INVIO =================
-$("send").onclick = async () => {
+$("send").onclick = () => setTimeout(sendTicket, 60);
+async function sendTicket(){
   const file = shareFile instanceof File ? shareFile : null;
   if (file && navigator.canShare && navigator.canShare({ files: [file] })){
     try { await navigator.share({ files: [file] }); return; }
@@ -602,7 +603,7 @@ $("send").onclick = async () => {
     await navigator.clipboard.write([new ClipboardItem({ "image/png": fetch(ticketURL).then(r => r.blob()) })]);
     toast("Biglietto copiato: incollalo in WhatsApp");
   } catch(e){ toast("Tieni premuto sul biglietto per salvarlo"); }
-};
+}
 
 // ================= IMPOSTAZIONI =================
 const fields = { sMe:"me", sFriend:"friend", sFrom:"from", sFromCity:"fromCity", sTo:"to", sToCity:"toCity" };
