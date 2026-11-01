@@ -104,10 +104,18 @@ function drawCabin(c, x, y, half, her, me, meInitial) {
   let cy = y;
   if (half === "front") {
     cy += 30;
-    // autista
-    rrect(c, ix, cy, colX[1] + sw, 26, 8); c.fillStyle = "#F1F3F8"; c.fill();
-    c.strokeStyle = GREY; c.lineWidth = 2; c.beginPath(); c.arc(ix + 16, cy + 13, 6, 0, 7); c.stroke();
-    txt(c, "AUTISTA", ix + 28, cy + 16, 7, 800, GREY, "left", 1.2);
+    // autista: volante + scritta centrati nel riquadro, con margine interno su entrambi i lati
+    const dW = colX[1] + sw;
+    rrect(c, ix, cy, dW, 26, 8); c.fillStyle = "#F1F3F8"; c.fill();
+    const lbl = "AUTISTA", fs = 6.5, sp = 0.9;
+    c.font = `800 ${fs}px ${FONT}`;
+    const tW = [...lbl].reduce((a, ch) => a + c.measureText(ch).width + sp, -sp);
+    const wR = 4.5, gap = 5, grp = wR * 2 + gap + tW, gx = ix + (dW - grp) / 2;
+    c.strokeStyle = GREY; c.lineWidth = 1.6;
+    c.beginPath(); c.arc(gx + wR, cy + 13, wR, 0, 7); c.stroke();
+    c.beginPath(); c.arc(gx + wR, cy + 13, 1.2, 0, 7); c.fillStyle = GREY; c.fill();
+    c.beginPath(); c.moveTo(gx + wR, cy + 14.2); c.lineTo(gx + wR, cy + 13 + wR); c.moveTo(gx, cy + 12.4); c.lineTo(gx + wR - 1.2, cy + 13); c.moveTo(gx + 2 * wR, cy + 12.4); c.lineTo(gx + wR + 1.2, cy + 13); c.stroke();
+    txt(c, lbl, gx + wR * 2 + gap, cy + 15.4, fs, 800, GREY, "left", sp);
     door(ix + colX[2], cy, sw * 2 + g, 26, "PORTA");
     cy += 26 + 10;
     for (let r = 1; r <= 6; r++) {
