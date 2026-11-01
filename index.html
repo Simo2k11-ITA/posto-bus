@@ -24,29 +24,52 @@ body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
   padding:calc(var(--st) + 14px) 18px calc(var(--sb) + 120px)}
 button{font-family:inherit}
 /* header */
-.top{max-width:460px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:flex-start}
-.brand{font-size:10px;font-weight:800;letter-spacing:.24em;color:var(--yel)}
-h1{margin:6px 0 10px;font-size:30px;line-height:1.05;font-weight:750;letter-spacing:-.03em}
-.route{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-weight:600}
-.route b{color:var(--ink);font-size:15px;letter-spacing:.04em}
-.route .dots{width:34px;border-top:1.5px dashed var(--dim)}
+.top{max-width:460px;margin:0 auto 16px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:800;letter-spacing:.22em;color:var(--muted)}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--yel);display:flex;align-items:center;justify-content:center}
+.brand i svg{width:15px;height:15px}
+h1{margin:0 0 14px;font-size:32px;line-height:1.02;font-weight:760;letter-spacing:-.035em}
+h1 span{color:var(--muted)}
+.route{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px 16px;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
+.route .code{font-size:24px;font-weight:800;letter-spacing:.02em;line-height:1}
+.route .city{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px}
+.route .r{text-align:right}
+.route .mid{position:relative;height:22px;display:flex;align-items:center;justify-content:center}
+.route .mid::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1.5px dashed var(--dim)}
+.route .mid span{position:relative;background:var(--panel);padding:0 8px;font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--yel)}
+.route .meta{grid-column:1/4;display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:10px;margin-top:2px;
+  font-size:11px;color:var(--muted);font-weight:600}
+.route .meta b{color:var(--ink);font-weight:700}
 .gear{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);
   display:flex;align-items:center;justify-content:center;flex:none}
 .gear svg{width:19px;height:19px}
 /* bus */
 .bus{max-width:460px;margin:0 auto;background:var(--panel);border:1px solid var(--line);
-  border-radius:120px 120px 34px 34px;padding:56px 20px 22px;position:relative}
-.bus::before{content:"";position:absolute;left:50%;top:16px;width:64px;height:5px;border-radius:3px;background:var(--line);transform:translateX(-50%)}
+  border-radius:44px 44px 30px 30px;padding:14px 20px 22px;position:relative}
+/* specchietti */
+.bus::before,.bus::after{content:"";position:absolute;top:30px;width:9px;height:30px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
+.bus::before{left:-11px} .bus::after{right:-11px}
+.windshield{height:58px;margin:0 -6px 14px;border-radius:32px 32px 12px 12px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#1B2232,#121722);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.windshield::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.04) 31%,rgba(255,255,255,.04) 40%,transparent 41%)}
+.sign{position:relative;background:#05070B;border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:10px;
+  border:1px solid #1E2433;box-shadow:inset 0 0 12px rgba(255,173,0,.06)}
+.sign b{font:800 15px/1 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.18em;color:var(--yel);text-shadow:0 0 8px rgba(255,173,0,.55)}
+.sign em{font:700 10px/1 ui-monospace,"SF Mono",Menlo,monospace;font-style:normal;color:#8a6a1e;letter-spacing:.1em}
 .cols,.row{display:grid;grid-template-columns:1fr 1fr .62fr 1fr 1fr;gap:9px}
 .cols{margin:14px 0 8px}
 .cols span{text-align:center;font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.1em}
 .row{margin-bottom:9px}
 .row.back{grid-template-columns:repeat(5,1fr);margin-top:14px}
 .front{display:grid;grid-template-columns:1fr 1fr .62fr 1fr 1fr;gap:9px}
-.cell{border-radius:12px;height:40px;display:flex;align-items:center;justify-content:center;gap:6px;
+.cell{border-radius:12px;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;
   font-size:9.5px;font-weight:700;letter-spacing:.14em;color:var(--dim)}
 .driver{grid-column:1/3;background:var(--panel2)}
-.driver i{width:13px;height:13px;border:2px solid var(--dim);border-radius:50%}
+.driver svg{width:18px;height:18px;color:var(--muted)}
+.front .door{flex-direction:column;gap:2px;color:var(--muted)}
+.front .door svg{width:14px;height:14px}
 .door{grid-column:4/6;background:repeating-linear-gradient(90deg,var(--panel2) 0 4px,transparent 4px 8px)}
 .num{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim);font-weight:600}
 .seat{aspect-ratio:1/.92;border:0;border-radius:11px 11px 8px 8px;background:var(--seat);position:relative;padding:0;
@@ -121,18 +144,28 @@ h1{margin:6px 0 10px;font-size:30px;line-height:1.05;font-weight:750;letter-spac
 <body>
 
 <div class="top">
-  <div>
-    <div class="brand">SERIANA AIRBUS LINES</div>
-    <h1>Dove sei<br>seduto?</h1>
-    <div class="route"><b id="rFrom">LEF</b><span class="dots"></span><b id="rTo">BGO</b><span id="rDate"></span></div>
+  <div class="bar">
+    <div class="brand"><i><svg viewBox="0 0 24 24" fill="#05164D"><rect x="5" y="3" width="14" height="15" rx="3"/><rect x="7" y="5" width="10" height="5" rx="1" fill="#FFAD00"/><circle cx="8.5" cy="14.5" r="1.3" fill="#FFAD00"/><circle cx="15.5" cy="14.5" r="1.3" fill="#FFAD00"/><rect x="6" y="18" width="3" height="3" rx="1"/><rect x="15" y="18" width="3" height="3" rx="1"/></svg></i>SERIANA AIRBUS</div>
+    <button class="gear" id="gear" aria-label="Impostazioni">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
   </div>
-  <button class="gear" id="gear" aria-label="Impostazioni">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-  </button>
+  <h1>Dove sei seduto<span>?</span></h1>
+  <div class="route">
+    <div><div class="code" id="rFrom">LEF</div><div class="city" id="rFromCity">Leffe</div></div>
+    <div class="mid"><span>IN VIAGGIO</span></div>
+    <div class="r"><div class="code" id="rTo">BGO</div><div class="city" id="rToCity">Bergamo</div></div>
+    <div class="meta"><span>Data <b id="rDate"></b></span><span>Ora <b id="rTime"></b></span><span>Con <b class="fname">Benny</b></span></div>
+  </div>
 </div>
 
 <div class="bus" id="bus">
-  <div class="front"><div class="cell driver"><i></i>AUTISTA</div><div></div><div class="cell door">PORTA</div></div>
+  <div class="windshield"><div class="sign"><em id="signLine">SA</em><b id="signDest">BERGAMO</b></div></div>
+  <div class="front">
+    <div class="cell driver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.6 11.2 3.5 9.5M14.4 11.2l6.1-1.7"/></svg>AUTISTA</div>
+    <div></div>
+    <div class="cell door"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>INGRESSO</div>
+  </div>
   <div class="cols"><span>A</span><span>B</span><span></span><span>C</span><span>D</span></div>
 </div>
 <div class="legend"><span>◀ Sinistra</span><span>Fondo del pullman</span><span>Destra ▶</span></div>
@@ -255,9 +288,9 @@ function drawCabin(c, x, y, half, her, me, meInitial) {
   // carrozzeria
   c.save();
   c.shadowColor = "rgba(5,22,77,.10)"; c.shadowBlur = 10; c.shadowOffsetY = 3;
-  rrect(c, x, y, w, h, half === "front" ? [46, 46, 14, 14] : [14, 14, 34, 34]);
+  rrect(c, x, y, w, h, half === "front" ? [26, 26, 14, 14] : [14, 14, 26, 26]);
   c.fillStyle = "#fff"; c.fill(); c.restore();
-  rrect(c, x, y, w, h, half === "front" ? [46, 46, 14, 14] : [14, 14, 34, 34]);
+  rrect(c, x, y, w, h, half === "front" ? [26, 26, 14, 14] : [14, 14, 26, 26]);
   c.lineWidth = 1.5; c.strokeStyle = LINE; c.stroke();
 
   const ix = x + pad;
@@ -482,8 +515,11 @@ function select(id){
 
 function paintHeader(){
   $("rFrom").textContent = cfg.from; $("rTo").textContent = cfg.to;
+  $("rFromCity").textContent = cfg.fromCity; $("rToCity").textContent = cfg.toCity;
   const m = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"], d = new Date();
-  $("rDate").textContent = "· " + d.getDate() + " " + m[d.getMonth()];
+  $("rDate").textContent = d.getDate() + " " + m[d.getMonth()];
+  $("rTime").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  $("signDest").textContent = cfg.toCity.toUpperCase().slice(0,12);
   document.querySelectorAll(".fname").forEach(e => e.textContent = cfg.friend);
 }
 
