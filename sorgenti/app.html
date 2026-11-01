@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Posto Bus">
+<meta name="theme-color" content="#0A0D14">
+<!--ICON-->
+<title>Posto Bus</title>
+<style>
+:root{
+  --bg:#0A0D14; --panel:#121722; --panel2:#181E2B; --line:#232A3A; --seat:#1E2534; --seat-hi:#273044;
+  --ink:#F3F5FA; --muted:#7D879C; --dim:#4A5468; --yel:#FFAD00; --navy:#05164D;
+  --st:env(safe-area-inset-top); --sb:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html{background:var(--bg);touch-action:pan-y;-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Roboto,sans-serif;
+  padding:calc(var(--st) + 14px) 18px calc(var(--sb) + 120px)}
+button{font-family:inherit}
+/* header */
+.top{max-width:460px;margin:0 auto 16px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:800;letter-spacing:.22em;color:var(--muted)}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--yel);display:flex;align-items:center;justify-content:center}
+.brand i svg{width:15px;height:15px}
+h1{margin:0 0 14px;font-size:32px;line-height:1.02;font-weight:760;letter-spacing:-.035em}
+h1 span{color:var(--muted)}
+.route{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px 16px;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
+.route .code{font-size:24px;font-weight:800;letter-spacing:.02em;line-height:1}
+.route .city{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px}
+.route .r{text-align:right}
+.route .mid{position:relative;height:22px;display:flex;align-items:center;justify-content:center}
+.route .mid::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1.5px dashed var(--dim)}
+.route .mid span{position:relative;background:var(--panel);padding:0 8px;font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--yel)}
+.route .meta{grid-column:1/4;display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:10px;margin-top:2px;
+  font-size:11px;color:var(--muted);font-weight:600}
+.route .meta b{color:var(--ink);font-weight:700}
+.gear{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.gear svg{width:19px;height:19px}
+/* bus */
+.bus{max-width:460px;margin:0 auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:44px 44px 30px 30px;padding:14px 20px 22px;position:relative}
+/* specchietti */
+.bus::before,.bus::after{content:"";position:absolute;top:30px;width:9px;height:30px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
+.bus::before{left:-11px} .bus::after{right:-11px}
+.windshield{height:58px;margin:0 -6px 14px;border-radius:32px 32px 12px 12px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#1B2232,#121722);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.windshield::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.04) 31%,rgba(255,255,255,.04) 40%,transparent 41%)}
+.sign{position:relative;background:#05070B;border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:10px;
+  border:1px solid #1E2433;box-shadow:inset 0 0 12px rgba(255,173,0,.06)}
+.sign b{font:800 15px/1 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.18em;color:var(--yel);text-shadow:0 0 8px rgba(255,173,0,.55)}
+.sign em{font:700 10px/1 ui-monospace,"SF Mono",Menlo,monospace;font-style:normal;color:#8a6a1e;letter-spacing:.1em}
+.cols,.row{display:grid;grid-template-columns:1fr 1fr .62fr 1fr 1fr;gap:9px}
+.cols{margin:14px 0 8px}
+.cols span{text-align:center;font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.1em}
+.row{margin-bottom:9px}
+.row.back{grid-template-columns:repeat(5,1fr);margin-top:14px}
+.front{display:grid;grid-template-columns:1fr 1fr .62fr 1fr 1fr;gap:9px}
+.cell{border-radius:12px;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:9.5px;font-weight:700;letter-spacing:.14em;color:var(--dim)}
+.driver{grid-column:1/3;background:var(--panel2)}
+.driver svg{width:18px;height:18px;color:var(--muted)}
+/* porte: la freccia arriva da fuori (lato destro) e punta dentro la porta */
+.door.entry{position:relative;color:var(--muted);overflow:visible}
+.door.entry i{position:absolute;right:-30px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;
+  background:var(--yel);color:var(--navy);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px var(--bg)}
+.door.entry i svg{width:15px;height:15px}
+.door{grid-column:4/6;background:repeating-linear-gradient(90deg,var(--panel2) 0 4px,transparent 4px 8px)}
+.num{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim);font-weight:600}
+/* interruttore nativo invisibile sopra i comandi: toccandolo iOS fa vibrare (Taptic Engine) */
+.hz{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:.011;z-index:3;cursor:pointer;border-radius:inherit}
+.seat{display:flex;align-items:center;justify-content:center;aspect-ratio:1/.92;border:0;border-radius:11px 11px 8px 8px;background:var(--seat);position:relative;padding:0;
+  color:transparent;font-size:13px;font-weight:800;transition:transform .2s cubic-bezier(.3,1.7,.5,1),background .15s,color .15s;
+  touch-action:manipulation}
+.seat::after{content:"";position:absolute;left:24%;right:24%;bottom:6px;height:3px;border-radius:2px;background:rgba(255,255,255,.05)}
+.seat:active{transform:scale(.88)}
+.seat.sel{background:var(--yel);color:var(--navy);transform:scale(1.06);box-shadow:0 0 0 4px rgba(255,173,0,.18),0 8px 24px rgba(255,173,0,.35)}
+.seat.sel::after{background:rgba(5,22,77,.15)}
+.legend{max-width:460px;margin:12px auto 0;display:flex;justify-content:space-between;color:var(--dim);font-size:11px;font-weight:600}
+/* barra in basso */
+.dock{position:fixed;left:14px;right:14px;bottom:calc(var(--sb) + 14px);max-width:460px;margin:0 auto;
+  background:rgba(24,30,43,.82);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.07);border-radius:26px;padding:10px 10px 10px 18px;display:flex;align-items:center;gap:12px;
+  transform:translateY(calc(100% + 60px + env(safe-area-inset-bottom)));opacity:0;pointer-events:none;
+  transition:transform .38s cubic-bezier(.2,.9,.25,1.1),opacity .2s;z-index:5}
+.dock.on{transform:none;opacity:1;pointer-events:auto}
+.dock .info{flex:1;min-width:0}
+.dock small{display:block;font-size:9.5px;font-weight:800;letter-spacing:.2em;color:var(--muted)}
+.dock b{font-size:28px;letter-spacing:-.02em;line-height:1.1}
+.dock em{font-style:normal;font-size:12px;color:var(--muted);margin-left:6px}
+.print{position:relative;height:56px;border:0;border-radius:18px;background:var(--yel);color:var(--navy);font-size:16px;font-weight:800;
+  padding:0 22px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(255,173,0,.3)}
+.print:active,.big:active{transform:scale(.96)}
+/* stampa */
+.stage{position:fixed;inset:0;z-index:20;background:rgba(6,8,13,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  display:none;flex-direction:column;align-items:center;padding:calc(var(--st) + 12px) 16px calc(var(--sb) + 16px);overflow:hidden}
+.stage.on{display:flex}
+/* stampante: il biglietto esce dalla fessura (linea scura) e scende davanti al bordo inferiore */
+.printer{width:min(90vw,380px);height:50px;border-radius:16px;position:relative;z-index:2;flex:none;
+  background:linear-gradient(180deg,#2A3346 0%,#1B2130 55%,#151A25 100%);border:1px solid #303A4F;
+  box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);transition:opacity .45s,transform .45s}
+.printer::before{content:"";position:absolute;left:12px;right:12px;top:30px;height:6px;border-radius:3px;
+  background:#010204;box-shadow:inset 0 2px 3px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07)}
+.printer::after{content:"";position:absolute;right:14px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--yel);
+  box-shadow:0 0 8px var(--yel);animation:blink .5s steps(2) infinite}
+.printer span{position:absolute;left:16px;top:9px;font-size:8px;font-weight:800;letter-spacing:.24em;color:#56617A}
+.stage.done .printer{opacity:0;transform:translateY(-24px)}
+.stage.done .printer::after{animation:none}
+@keyframes blink{50%{opacity:.2}}
+/* finestra di uscita: parte esattamente dalla fessura (50 - 17 = 33px = centro fessura) */
+.slot{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:flex-start;margin-top:-17px;
+  overflow:hidden;position:relative;z-index:3}
+.slot::before{content:"";position:absolute;left:0;right:0;top:0;height:14px;z-index:2;pointer-events:none;
+  background:linear-gradient(rgba(6,8,13,.75),transparent);transition:opacity .3s}
+.stage.done .slot{overflow:visible}
+.stage.done .slot::before{opacity:0}
+.ticket{display:block;flex:none;transform:translateY(-101%);will-change:transform}
+.stage.printing .ticket{animation:print 1.9s cubic-bezier(.45,.05,.4,1) forwards}
+@keyframes print{
+  0%{transform:translateY(-101%)} 12%{transform:translateY(-90%)} 16%{transform:translateY(-88%)}
+  36%{transform:translateY(-62%)} 40%{transform:translateY(-60%)} 62%{transform:translateY(-30%)}
+  66%{transform:translateY(-28%)} 100%{transform:translateY(0)}}
+.stage.done .ticket{transform:none;animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.025)}100%{transform:scale(1)}}
+.actions{width:100%;max-width:420px;display:flex;gap:10px;margin-top:14px;opacity:0;transform:translateY(16px);transition:.35s .1s;flex:none}
+.stage.done .actions{opacity:1;transform:none}
+.big{flex:1;height:58px;border:0;border-radius:19px;background:var(--yel);color:var(--navy);font-size:17px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:9px}
+.big svg{width:20px;height:20px}
+.ghost{width:58px;height:58px;border-radius:19px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:20px;flex:none}
+/* impostazioni */
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.5);display:none;align-items:flex-end}
+.sheet.on{display:flex}
+.sheet-in{width:100%;max-width:520px;margin:0 auto;max-height:92dvh;overflow-y:auto;background:var(--panel);border-radius:28px 28px 0 0;border:1px solid var(--line);
+  padding:22px 20px calc(var(--sb) + 22px);animation:up .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes up{from{transform:translateY(60%)}}
+.sheet h2{margin:0 0 16px;font-size:20px}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.f label{display:block;text-transform:uppercase;font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted);margin:0 0 6px 2px}
+.f input{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  font:600 16px inherit;font-family:inherit;padding:0 14px;-webkit-user-select:text;user-select:text}
+.f input.code{text-transform:uppercase;letter-spacing:.1em}
+.icons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 8px}
+.ic{border:0;background:none;padding:0;color:var(--muted);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:7px}
+.ic span{width:58px;height:58px;border-radius:15px;overflow:hidden;display:block;box-shadow:0 0 0 1px var(--line);transition:box-shadow .15s,transform .15s;position:relative}
+.ic img{width:100%;height:100%;display:block}
+.ic span.split img{position:absolute;inset:0}
+.ic span.split img+img{clip-path:polygon(100% 0,100% 100%,0 100%)}
+.ic.on{color:var(--ink)}
+.ic.on span{box-shadow:0 0 0 2.5px var(--bg),0 0 0 4.5px var(--yel);transform:scale(1.04)}
+.ichint{font-size:12px;line-height:1.45;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 14px}
+.ichint b{color:var(--ink)}
+.ichint button{margin-top:8px;border:0;border-radius:10px;background:var(--panel2);color:var(--ink);font:700 13px inherit;font-family:inherit;padding:8px 12px}
+.verify{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;overflow-y:auto;
+  padding:calc(var(--st) + 18px) 20px calc(var(--sb) + 24px)}
+.verify.on{display:block}
+.v-in{max-width:440px;margin:0 auto}
+.v-badge{margin:26px auto 18px;width:112px;height:112px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  animation:vpop .6s cubic-bezier(.2,1.4,.4,1)}
+.v-badge svg{width:56px;height:56px}
+.v-ok .v-badge{background:#30D158;box-shadow:0 0 0 10px rgba(48,209,88,.15),0 0 60px rgba(48,209,88,.35)}
+.v-ko .v-badge{background:#FF453A;box-shadow:0 0 0 10px rgba(255,69,58,.15),0 0 60px rgba(255,69,58,.35)}
+@keyframes vpop{from{transform:scale(.4);opacity:0}}
+.v-title{text-align:center;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.v-sub{text-align:center;color:var(--muted);font-size:14px;margin:6px 0 22px}
+.v-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:6px 18px}
+.v-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.v-row:last-child{border:0}
+.v-row span{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted)}
+.v-row b{font-size:16px;text-align:right}
+.v-seat b{font-size:26px;color:var(--yel)}
+.v-foot{text-align:center;color:var(--dim);font-size:11px;margin:18px 0}
+.pref{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg);border:1px solid var(--line);
+  border-radius:14px;padding:12px 14px}
+.pref b{display:block;font-size:15px;font-weight:650}
+.pref small{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
+.pref input{accent-color:var(--yel);transform:scale(1.15);flex:none}
+.sec{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted);margin:16px 2px 8px}
+.toast{position:fixed;left:50%;top:calc(var(--st) + 14px);transform:translate(-50%,-30px);opacity:0;z-index:40;
+  background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;
+  transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="bar">
+    <div class="brand"><i><svg viewBox="0 0 24 24" fill="#05164D"><rect x="5" y="3" width="14" height="15" rx="3"/><rect x="7" y="5" width="10" height="5" rx="1" fill="#FFAD00"/><circle cx="8.5" cy="14.5" r="1.3" fill="#FFAD00"/><circle cx="15.5" cy="14.5" r="1.3" fill="#FFAD00"/><rect x="6" y="18" width="3" height="3" rx="1"/><rect x="15" y="18" width="3" height="3" rx="1"/></svg></i>SERIANA AIRBUS</div>
+    <button class="gear" id="gear" aria-label="Impostazioni">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </div>
+  <h1>Dove sei seduto<span>?</span></h1>
+  <div class="route">
+    <div><div class="code" id="rFrom">LEF</div><div class="city" id="rFromCity">Leffe</div></div>
+    <div class="mid"><span>IN VIAGGIO</span></div>
+    <div class="r"><div class="code" id="rTo">BGO</div><div class="city" id="rToCity">Bergamo</div></div>
+    <div class="meta"><span>Data <b id="rDate"></b></span><span>Ora <b id="rTime"></b></span><span>Con <b class="fname">Benny</b></span></div>
+  </div>
+</div>
+
+<div class="bus" id="bus">
+  <div class="windshield"><div class="sign"><em id="signLine">SA</em><b id="signDest">BERGAMO</b></div></div>
+  <div class="front">
+    <div class="cell driver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.6 11.2 3.5 9.5M14.4 11.2l6.1-1.7"/></svg>AUTISTA</div>
+    <div></div>
+    <div class="cell door entry">INGRESSO<i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 6l-6 6 6 6"/></svg></i></div>
+  </div>
+  <div class="cols"><span>A</span><span>B</span><span></span><span>C</span><span>D</span></div>
+</div>
+<div class="legend"><span>◀ Sinistra</span><span>Fondo del pullman</span><span>Destra ▶</span></div>
+
+<div class="dock" id="dock">
+  <div class="info"><small>IL TUO POSTO</small><b id="dSeat">—</b><em id="dSide"></em></div>
+  <div class="print" id="printBtn" role="button">Stampa
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+  </div>
+</div>
+
+<div class="stage" id="stage">
+  <div class="printer" id="printer"><span>SERIANA</span></div>
+  <div class="slot"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas></div>
+  <div class="actions">
+    <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
+    <div class="big" id="send" role="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M6 9l6-6 6 6M5 21h14"/></svg>
+      <span>Invia a <span class="fname">Benny</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet"><div class="sheet-in">
+  <h2>Impostazioni</h2>
+  <div class="sec">ICONA NELLA HOME</div>
+  <div class="icons" id="icons"></div>
+  <div class="ichint" id="ichint"></div>
+  <div class="sec">PREFERENZE</div>
+  <label class="pref"><span><b>Ricorda l'ultimo posto</b><small>All'apertura trovi già selezionato il posto della volta prima</small></span>
+    <input type="checkbox" switch id="sRemember"></label>
+  <div class="sec">VIAGGIO</div>
+  <div class="f"><div><label>Il tuo nome</label><input id="sMe"></div><div><label>Lo mandi a</label><input id="sFriend"></div></div>
+  <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
+  <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
+  <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.2</p>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="verify" id="verify"></div>
+
+
+<script>
+// ================= ERRORI VISIBILI =================
+window.addEventListener("error", e => { try { toast("Errore: " + e.message); } catch(_){} });
+window.addEventListener("unhandledrejection", e => { try { toast("Errore: " + (e.reason && e.reason.message || e.reason)); } catch(_){} });
+// ================= DATI =================
+const LAST = 13, DOOR_ROW = 7;
+const NEXT = {A:"B", B:"A", C:"D", D:"C", E:"C"};
+const SIDE = {A:"Finestrino sx", B:"Corridoio sx", C:"Corridoio dx", D:"Finestrino dx", E:"Centrale"};
+const neighbour = id => id.slice(0,-1) + NEXT[id.slice(-1)];
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ return localStorage.getItem(k) ?? d }catch(e){ return d } },
+  set(k, v){ try{ v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v) }catch(e){} }
+};
+const cfg = {
+  me: store.get("me","Simone"), friend: store.get("friendName","Benny"),
+  from: store.get("from","LEF"), fromCity: store.get("fromCity","Leffe"),
+  to: store.get("to","BGO"), toCity: store.get("toCity","Bergamo")
+};
+let remember = store.get("remember", "1") !== "0";
+let mine = remember ? store.get("mySeat", null) : null, shareFile = null, shareBlob = null;
+const shareCanvas = document.createElement("canvas");   // canvas riusato per l'immagine da inviare
+</script>
+<script>/*TICKET*/</script>
+<script>
+// ================= MAPPA =================
+const bus = $("bus"), seats = {};
+const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const hz = () => { const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.className = "hz";
+  i.setAttribute("aria-hidden", "true"); i.tabIndex = -1; i.addEventListener("change", () => { i.checked = false; }); return i; };
+const seatBtn = id => { const b = mk("div", "seat", id); b.setAttribute("role", "button"); b.append(hz()); b.dataset.id = id; b.setAttribute("aria-label", "Posto " + id); seats[id] = b; return b; };
+for (let r = 1; r < LAST; r++){
+  const row = mk("div", "row");
+  row.append(seatBtn(r+"A"), seatBtn(r+"B"), mk("div", "num", r));
+  if (r === DOOR_ROW) { const d = mk("div", "cell door entry"); d.innerHTML = 'PORTA<i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 6l-6 6 6 6"/></svg></i>'; row.append(d); }
+  else row.append(seatBtn(r+"C"), seatBtn(r+"D"));
+  bus.append(row);
+}
+const back = mk("div", "row back"); "ABECD".split("").forEach(l => back.append(seatBtn(LAST + l))); bus.append(back);
+bus.addEventListener("click", e => { const b = e.target.closest(".seat"); if (b) select(b.dataset.id); });
+
+function select(id){
+  if (mine && seats[mine]) seats[mine].classList.remove("sel");
+  haptic(8);
+  mine = id; store.set("mySeat", id);
+  seats[id].classList.add("sel");
+  $("dSeat").textContent = id; $("dSide").textContent = SIDE[id.slice(-1)];
+  $("dock").classList.add("on");
+  shareFile = null;
+}
+
+function paintHeader(){
+  $("rFrom").textContent = cfg.from; $("rTo").textContent = cfg.to;
+  $("rFromCity").textContent = cfg.fromCity; $("rToCity").textContent = cfg.toCity;
+  const m = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"], d = new Date();
+  $("rDate").textContent = d.getDate() + " " + m[d.getMonth()];
+  $("rTime").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  $("signDest").textContent = cfg.toCity.toUpperCase().slice(0,12);
+  document.querySelectorAll(".fname").forEach(e => e.textContent = cfg.friend);
+}
+
+// ================= VIBRAZIONE =================
+// iOS non ha navigator.vibrate: un interruttore nativo (input switch) creato e cliccato al volo
+// fa scattare la Taptic Engine (Safari iOS 18+)
+function haptic(ms = 12){
+  if (typeof navigator.vibrate === "function") { try { if (navigator.vibrate(ms)) return; } catch(e){} }
+  try {
+    const l = document.createElement("label"); l.setAttribute("aria-hidden", "true"); l.style.display = "none";
+    const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", "");
+    l.appendChild(i); document.head.appendChild(l); l.click(); document.head.removeChild(l);
+  } catch(e){}
+}
+let hTimers = [];
+function printHaptics(){
+  hTimers.forEach(clearTimeout); hTimers = [];
+  // tratti in cui il biglietto avanza (in ms, come l'animazione da 1.9 s)
+  const moves = [[0, 228], [304, 684], [760, 1178], [1254, 1900]];
+  for (const [a, b] of moves) for (let t = a; t < b; t += 65) hTimers.push(setTimeout(() => haptic(10), t));
+  hTimers.push(setTimeout(() => haptic(35), 1950));        // colpo finale: biglietto pronto
+}
+
+// ================= STAMPA =================
+const stage = $("stage");
+// ================= QR DI VERIFICA =================
+const SITE = "https://simo2k11-ita.github.io/posto-bus/";
+const b64u = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64u = s => decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))));
+function newPass(){
+  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let code = "";
+  const rnd = new Uint32Array(6); (crypto || window.msCrypto).getRandomValues(rnd);
+  rnd.forEach(v => code += A[v % A.length]);
+  const now = new Date(), end = new Date(now); end.setHours(23, 59, 0, 0);
+  const min = d => Math.floor(d.getTime() / 60000).toString(36);
+  const data = [1, cfg.friend, neighbour(mine), cfg.me, mine, cfg.from, cfg.fromCity, cfg.to, cfg.toCity, min(now), min(end), code].join("~");
+  return { code, url: SITE + "?pass=" + b64u(data) };
+}
+
+function printTicket(){
+  if (!mine) return;
+  const tk = $("ticket");
+  const pass = newPass();                 // QR diverso a ogni stampa
+  const tOpt = { mine, ...cfg, qr: pass.url, code: pass.code };
+  try {
+    // 1) biglietto a schermo, disegnato direttamente nel canvas della pagina (nessun caricamento immagine)
+    drawTicket(tOpt, { bg:false, canvas: tk });
+    // 2) dimensioni calcolate dalla finestra, non dal layout
+    const r = tk.width / tk.height;
+    let h = Math.max(240, window.innerHeight - 200), w = h * r;
+    const maxW = window.innerWidth - 24; if (w > maxW) { w = maxW; h = w / r; }
+    tk.style.width = Math.round(w) + "px"; tk.style.height = Math.round(h) + "px";
+    $("printer").style.width = Math.round(Math.min(maxW, w * (360 / 396) + 28)) + "px";
+  } catch (e) { toast("Errore disegno: " + e.message); }
+
+  // 3) animazione: mostro la scena, poi al frame successivo faccio partire la stampa
+  stage.className = "stage on";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    stage.classList.add("printing");
+    printHaptics();
+    clearTimeout(stage._t);
+    stage._t = setTimeout(finish, 1950);
+  }));
+
+  // 4) immagine da inviare, preparata in sottofondo
+  shareFile = null; shareBlob = null;
+  setTimeout(() => {
+    try {
+      drawTicket(tOpt, { canvas: shareCanvas });
+      shareCanvas.toBlob(b => {
+        shareBlob = b;
+        try { shareFile = new File([b], `carta-imbarco-${neighbour(mine)}.png`, { type:"image/png" }); } catch(e){}
+      }, "image/png");
+    } catch (e) { toast("Errore immagine: " + e.message); }
+  }, 120);
+}
+function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); }
+$("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
+$("printBtn").append(hz());
+$("printBtn").onclick = () => setTimeout(printTicket, 60);
+// anche "Invia" e il tocco per saltare la stampa danno il tic
+$("send").style.position = "relative"; $("send").append(hz());
+$("closeStage").onclick = () => { hTimers.forEach(clearTimeout); stage.className = "stage"; };
+
+// ================= INVIO =================
+$("send").onclick = () => setTimeout(sendTicket, 60);
+async function sendTicket(){
+  const file = shareFile instanceof File ? shareFile : null;
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })){
+    try { await navigator.share({ files: [file] }); return; }
+    catch(e){ if (e.name === "AbortError") return; }
+  }
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": shareBlob || new Promise(r => shareCanvas.toBlob(r, "image/png")) })]);
+    toast("Biglietto copiato: incollalo in WhatsApp");
+  } catch(e){ toast("Condivisione non disponibile qui"); }
+}
+
+// ================= IMPOSTAZIONI =================
+const fields = { sMe:"me", sFriend:"friend", sFrom:"from", sFromCity:"fromCity", sTo:"to", sToCity:"toCity" };
+$("gear").onclick = () => { for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; paintIcons(); $("sheet").classList.add("on"); };
+$("sRemember").addEventListener("change", e => {
+  remember = e.target.checked; store.set("remember", remember ? "1" : "0");
+  toast(remember ? "Ricorderò il tuo posto" : "Ogni volta partirai da zero");
+});
+
+// ---- scelta icona ----
+const ICON_LIST = [["auto","Automatica"],["blu","Blu notte"],["notte","Notte"],["turchese","Turchese"]];
+function paintIcons(){
+  const cur = iconChoice();
+  $("icons").innerHTML = ICON_LIST.map(([k, n]) => {
+    const pic = k === "auto"
+      ? `<span class="split"><img src="${POSTO_ICONS.blu}" alt=""><img src="${POSTO_ICONS.notte}" alt=""></span>`
+      : `<span><img src="${POSTO_ICONS[k]}" alt=""></span>`;
+    return `<button class="ic${k === cur ? " on" : ""}" data-k="${k}">${pic}${n}</button>`;
+  }).join("");
+  const standalone = navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  const link = location.origin + location.pathname + "?icon=" + cur;
+  const autoTxt = cur === "auto" ? " Con <b>Automatica</b> prende quella del tema (chiaro o scuro) attivo in quel momento." : "";
+  $("ichint").innerHTML = standalone
+    ? `iOS non cambia un'icona già nella Home. Per applicarla: elimina l'icona, apri questo link in <b>Safari</b> e fai <b>Condividi → Aggiungi alla schermata Home</b>.${autoTxt}<br><button id="copyLink">Copia link</button>`
+    : `Per applicarla: elimina la vecchia icona dalla Home, poi qui in Safari fai <b>Condividi → Aggiungi alla schermata Home</b>.${autoTxt}`;
+  const cl = $("copyLink");
+  if (cl) cl.onclick = async () => { try { await navigator.clipboard.writeText(link); toast("Link copiato: incollalo in Safari"); } catch(e){ toast(link); } };
+}
+$("icons").addEventListener("click", e => {
+  const b = e.target.closest(".ic"); if (!b) return;
+  const k = b.dataset.k;
+  store.set("icon", k);
+  try { history.replaceState(null, "", location.pathname + "?icon=" + k); } catch(e){}
+  applyIcon(); paintIcons(); haptic(8);
+});
+$("saveSet").onclick = () => {
+  for (const k in fields){
+    let v = $(k).value.trim(); if (!v) continue;
+    if (k === "sFrom" || k === "sTo") v = v.toUpperCase().slice(0,3);
+    cfg[fields[k]] = v; store.set(fields[k] === "friend" ? "friendName" : fields[k], v);
+  }
+  $("sheet").classList.remove("on"); paintHeader(); shareFile = null;
+};
+$("sheet").onclick = e => { if (e.target.id === "sheet") $("sheet").classList.remove("on"); };
+
+function toast(t){ const x = $("toast"); x.textContent = t; x.classList.add("on"); clearTimeout(x._t); x._t = setTimeout(() => x.classList.remove("on"), 1800); }
+
+// ================= NIENTE ZOOM =================
+// iOS Safari ignora user-scalable=no: blocco pinch e doppio tocco a mano
+["gesturestart","gesturechange","gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive:false }));
+document.addEventListener("touchmove", e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, { passive:false });
+let lastTouch = 0;
+document.addEventListener("touchend", e => {
+  const now = Date.now();
+  if (now - lastTouch < 350 && !e.target.closest("input")) e.preventDefault();
+  lastTouch = now;
+}, { passive:false });
+
+// ================= VERIFICA (quando qualcuno scansiona il QR) =================
+function showVerify(raw){
+  let p = null;
+  try { const a = unb64u(raw).split("~"); if (a[0] === "1" && a.length >= 12) p = a; } catch(e){}
+  const v = $("verify"); v.classList.add("on");
+  const head = `<div class="bar"><div class="brand"><i><svg viewBox="0 0 24 24" fill="#05164D"><rect x="5" y="3" width="14" height="15" rx="3"/><rect x="7" y="5" width="10" height="5" rx="1" fill="#FFAD00"/></svg></i>SERIANA AIRBUS · CONTROLLO</div></div>`;
+  const ok = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const ko = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+  const back = `<button class="big" id="vBack" style="width:100%;margin-top:18px">Apri Posto Bus</button>`;
+  if (!p){
+    v.className = "verify on v-ko";
+    v.innerHTML = `<div class="v-in">${head}<div class="v-badge">${ko}</div><div class="v-title">Biglietto non valido</div><div class="v-sub">Il codice non è leggibile</div>${back}</div>`;
+  } else {
+    const [, friend, seat, me, mySeat, from, fromCity, to, toCity, t0, t1, code] = p;
+    const d0 = new Date(parseInt(t0, 36) * 60000), d1 = new Date(parseInt(t1, 36) * 60000), now = new Date();
+    const valid = now >= new Date(d0.getTime() - 3600000) && now <= d1;
+    const fmt = d => d.toLocaleDateString("it-IT", { day:"2-digit", month:"2-digit", year:"numeric" }) + " · " + d.toLocaleTimeString("it-IT", { hour:"2-digit", minute:"2-digit" });
+    const e = t => String(t).replace(/[<>&"]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;" }[c]));
+    v.className = "verify on " + (valid ? "v-ok" : "v-ko");
+    v.innerHTML = `<div class="v-in">${head}
+      <div class="v-badge">${valid ? ok : ko}</div>
+      <div class="v-title">${valid ? "Biglietto valido" : "Biglietto scaduto"}</div>
+      <div class="v-sub">${valid ? "Imbarco confermato · buon viaggio" : "Questo biglietto non è più valido"}</div>
+      <div class="v-card">
+        <div class="v-row"><span>PASSEGGERO</span><b>${e(friend.toUpperCase())}</b></div>
+        <div class="v-row v-seat"><span>POSTO</span><b>${e(seat)}</b></div>
+        <div class="v-row"><span>ACCANTO A</span><b>${e(me)} · ${e(mySeat)}</b></div>
+        <div class="v-row"><span>TRATTA</span><b>${e(from)} ${e(fromCity)} → ${e(to)} ${e(toCity)}</b></div>
+        <div class="v-row"><span>VALIDO DAL</span><b>${fmt(d0)}</b></div>
+        <div class="v-row"><span>VALIDO FINO AL</span><b>${fmt(d1)}</b></div>
+        <div class="v-row"><span>CODICE</span><b>${e(code)}</b></div>
+      </div>
+      <div class="v-foot">Emesso da Seriana Airbus Lines · compagnia inventata, biglietto per gioco 🚌</div>${back}</div>`;
+  }
+  $("vBack").onclick = () => { v.className = "verify"; try { history.replaceState(null, "", location.pathname); } catch(e){} };
+}
+const passParam = (location.search.match(/[?&]pass=([A-Za-z0-9_-]+)/) || [])[1];
+if (passParam) showVerify(passParam);
+
+paintHeader();
+if (mine && seats[mine]) select(mine); else mine = null;
+</script>
+</body>
+</html>
