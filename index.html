@@ -195,11 +195,11 @@ h1 span{color:var(--muted)}
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 2.4</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
-<!-- iOS non supporta navigator.vibrate: un interruttore nativo nascosto produce il "tic" della Taptic Engine -->
-<label id="hapt" style="position:absolute;left:-9999px;opacity:0"><input type="checkbox" switch></label>
+
 
 <script>
 // ================= DATI =================
@@ -527,10 +527,15 @@ function paintHeader(){
 }
 
 // ================= VIBRAZIONE =================
-const hapt = $("hapt");
+// iOS non ha navigator.vibrate: un interruttore nativo (input switch) creato e cliccato al volo
+// fa scattare la Taptic Engine (Safari iOS 18+)
 function haptic(ms = 12){
-  if (navigator.vibrate) { try { navigator.vibrate(ms); return; } catch(e){} }
-  try { hapt.click(); } catch(e){}
+  if (typeof navigator.vibrate === "function") { try { if (navigator.vibrate(ms)) return; } catch(e){} }
+  try {
+    const l = document.createElement("label"); l.setAttribute("aria-hidden", "true"); l.style.display = "none";
+    const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", "");
+    l.appendChild(i); document.head.appendChild(l); l.click(); document.head.removeChild(l);
+  } catch(e){}
 }
 let hTimers = [];
 function printHaptics(){
