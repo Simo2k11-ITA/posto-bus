@@ -14,10 +14,18 @@
 :root{
   --bg:#0A0D14; --panel:#121722; --panel2:#181E2B; --line:#232A3A; --seat:#1E2534; --seat-hi:#273044;
   --ink:#F3F5FA; --muted:#7D879C; --dim:#4A5468; --yel:#FFAD00; --navy:#05164D;
+  --dock:rgba(24,30,43,.82); --stagebg:rgba(6,8,13,.94); --ws1:#1B2232; --ws2:#121722; --seatline:rgba(255,255,255,.05);
+  --chip:rgba(24,30,43,.85); --scrim:rgba(0,0,0,.5);
   --st:env(safe-area-inset-top); --sb:env(safe-area-inset-bottom);
 }
+:root[data-theme="light"]{
+  --bg:#EEF1F6; --panel:#FFFFFF; --panel2:#F2F4F8; --line:#DCE1EA; --seat:#E3E7EE; --seat-hi:#D6DCE6;
+  --ink:#0B1424; --muted:#667085; --dim:#9AA3B2;
+  --dock:rgba(255,255,255,.84); --stagebg:rgba(238,241,246,.96); --ws1:#E9EDF3; --ws2:#DCE2EB; --seatline:rgba(5,22,77,.08);
+  --chip:rgba(255,255,255,.92); --scrim:rgba(10,20,40,.28);
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html{background:var(--bg);touch-action:pan-y;-webkit-text-size-adjust:100%}
+html{background:var(--bg);transition:background .3s;touch-action:pan-y;-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Roboto,sans-serif;
   padding:calc(var(--st) + 14px) 18px calc(var(--sb) + 120px)}
@@ -51,7 +59,7 @@ h1 span{color:var(--muted)}
 .bus::before,.bus::after{content:"";position:absolute;top:30px;width:9px;height:30px;border-radius:5px;background:var(--panel2);border:1px solid var(--line)}
 .bus::before{left:-11px} .bus::after{right:-11px}
 .windshield{height:58px;margin:0 -6px 14px;border-radius:32px 32px 12px 12px;position:relative;overflow:hidden;
-  background:linear-gradient(180deg,#1B2232,#121722);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  background:linear-gradient(180deg,var(--ws1),var(--ws2));border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
 .windshield::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.04) 31%,rgba(255,255,255,.04) 40%,transparent 41%)}
 .sign{position:relative;background:#05070B;border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:10px;
   border:1px solid #1E2433;box-shadow:inset 0 0 12px rgba(255,173,0,.06)}
@@ -79,14 +87,14 @@ h1 span{color:var(--muted)}
 .seat{display:flex;align-items:center;justify-content:center;aspect-ratio:1/.92;border:0;border-radius:11px 11px 8px 8px;background:var(--seat);position:relative;padding:0;
   color:transparent;font-size:13px;font-weight:800;transition:transform .2s cubic-bezier(.3,1.7,.5,1),background .15s,color .15s;
   touch-action:manipulation}
-.seat::after{content:"";position:absolute;left:24%;right:24%;bottom:6px;height:3px;border-radius:2px;background:rgba(255,255,255,.05)}
+.seat::after{content:"";position:absolute;left:24%;right:24%;bottom:6px;height:3px;border-radius:2px;background:var(--seatline)}
 .seat:active{transform:scale(.88)}
 .seat.sel{background:var(--yel);color:var(--navy);transform:scale(1.06);box-shadow:0 0 0 4px rgba(255,173,0,.18),0 8px 24px rgba(255,173,0,.35)}
 .seat.sel::after{background:rgba(5,22,77,.15)}
 .legend{max-width:460px;margin:12px auto 0;display:flex;justify-content:space-between;color:var(--dim);font-size:11px;font-weight:600}
 /* barra in basso */
 .dock{position:fixed;left:14px;right:14px;bottom:calc(var(--sb) + 14px);max-width:460px;margin:0 auto;
-  background:rgba(24,30,43,.82);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  background:var(--dock);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
   border:1px solid rgba(255,255,255,.07);border-radius:26px;padding:10px 10px 10px 18px;display:flex;align-items:center;gap:12px;
   transform:translateY(calc(100% + 60px + env(safe-area-inset-bottom)));opacity:0;pointer-events:none;
   transition:transform .38s cubic-bezier(.2,.9,.25,1.1),opacity .2s;z-index:5}
@@ -99,7 +107,7 @@ h1 span{color:var(--muted)}
   padding:0 22px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(255,173,0,.3)}
 .print:active,.big:active{transform:scale(.96)}
 /* stampa */
-.stage{position:fixed;inset:0;z-index:20;background:rgba(6,8,13,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+.stage{position:fixed;inset:0;z-index:20;background:var(--stagebg);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
   display:none;flex-direction:column;align-items:center;padding:calc(var(--st) + 12px) 16px calc(var(--sb) + 16px);overflow:hidden}
 .stage.on{display:flex}
 /* stampante: il biglietto esce dalla fessura (linea scura) e scende davanti al bordo inferiore */
@@ -126,9 +134,10 @@ h1 span{color:var(--muted)}
 .tilt{position:relative;flex:none;will-change:transform;transform-style:preserve-3d}
 .glare{position:absolute;pointer-events:none;opacity:0;transition:opacity .5s;
   background:radial-gradient(circle at var(--gx,50%) var(--gy,25%),rgba(255,255,255,.55),rgba(255,255,255,0) 55%);mix-blend-mode:soft-light}
-.stage.done.tilting .glare{opacity:1}
+.stage.done.tilting .glare,.stage.done.touching .glare{opacity:1}
+.stage.done .tilt{touch-action:none;cursor:grab}
 .b3d{position:absolute;right:16px;top:calc(var(--st) + 12px);z-index:6;height:34px;padding:0 14px;border-radius:17px;
-  border:1px solid var(--line);background:rgba(24,30,43,.85);color:var(--ink);font:800 12px/1 inherit;font-family:inherit;letter-spacing:.12em;
+  border:1px solid var(--line);background:var(--chip);color:var(--ink);font:800 12px/1 inherit;font-family:inherit;letter-spacing:.12em;
   opacity:0;pointer-events:none;transition:opacity .3s}
 .stage.done.can3d .b3d{opacity:1;pointer-events:auto}
 .ticket{display:block;flex:none;transform:translateY(-101%);will-change:transform}
@@ -146,7 +155,7 @@ h1 span{color:var(--muted)}
 .big svg{width:20px;height:20px}
 .ghost{width:58px;height:58px;border-radius:19px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:20px;flex:none}
 /* impostazioni */
-.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.5);display:none;align-items:flex-end}
+.sheet{position:fixed;inset:0;z-index:30;background:var(--scrim);display:none;align-items:flex-end}
 .sheet.on{display:flex}
 .sheet-in{width:100%;max-width:520px;margin:0 auto;max-height:92dvh;overflow-y:auto;background:var(--panel);border-radius:28px 28px 0 0;border:1px solid var(--line);
   padding:22px 20px calc(var(--sb) + 22px);animation:up .3s cubic-bezier(.2,.9,.3,1)}
@@ -238,6 +247,41 @@ body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:
 @keyframes stamp{from{transform:rotate(-12deg) scale(2.2);opacity:0}}
 .v-ko .v-card{filter:saturate(.35)}
 .v-foot{text-align:center;color:var(--dim);font-size:11px;margin:16px 0 4px;line-height:1.5}
+.pax-only{display:none !important}
+body.pax .pax-only{display:flex !important}
+body.pax .simo-only{display:none !important}
+.linkbox{font:600 11px/1.35 ui-monospace,"SF Mono",Menlo,monospace;color:var(--ink);background:var(--panel2);border-radius:10px;padding:8px 10px;margin-top:8px;word-break:break-all;-webkit-user-select:text;user-select:text}
+.linkpill{position:absolute;left:16px;top:calc(var(--st) + 12px);z-index:6;height:34px;padding:0 13px;border-radius:17px;display:flex;align-items:center;gap:8px;
+  border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:12px;font-weight:700;opacity:0;transition:opacity .3s}
+.linkpill.on{opacity:1}
+.linkpill i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.linkpill.ok{color:var(--ink)} .linkpill.ok i{background:#30D158;box-shadow:0 0 8px #30D158}
+.linkpill.wip i{background:var(--yel);animation:blink .6s steps(2) infinite}
+.linkpill.ko i{background:#FF453A}
+/* lato passeggera */
+.install{max-width:460px;margin:0 auto 14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 40px 12px 14px;
+  flex-direction:column;gap:4px;position:relative;font-size:12.5px;color:var(--muted);line-height:1.45}
+.install b{color:var(--ink)}
+.install svg{width:14px;height:14px;vertical-align:-2px;color:#0A84FF}
+.install button{position:absolute;right:8px;top:8px;width:28px;height:28px;border:0;border-radius:50%;background:var(--panel2);color:var(--muted)}
+.wait{max-width:460px;margin:0 auto 14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;align-items:center;gap:14px}
+.wait b{display:block;font-size:15px}
+.wait span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.wdot{width:12px;height:12px;border-radius:50%;background:var(--yel);flex:none;box-shadow:0 0 0 0 rgba(255,173,0,.6);animation:ring 1.6s infinite}
+@keyframes ring{70%{box-shadow:0 0 0 12px rgba(255,173,0,0)}100%{box-shadow:0 0 0 0 rgba(255,173,0,0)}}
+body.pax.has .wait{display:none !important}
+body.pax .seat{pointer-events:none}
+body.pax .seat.sel{animation:seatGlow 1.8s ease-in-out infinite}
+@keyframes seatGlow{50%{box-shadow:0 0 0 7px rgba(255,173,0,.12),0 10px 34px rgba(255,173,0,.55)}}
+.seat.him{background:var(--navy);color:#fff}
+:root[data-theme="dark"] .seat.him{background:#2B4BB8}
+body.pax .door.entry i{background:var(--panel2);color:var(--dim);box-shadow:0 0 0 4px var(--bg)}
+body.pax .door.entry.use i{background:var(--yel);color:var(--navy);animation:arrowIn 1.4s ease-in-out infinite}
+@keyframes arrowIn{50%{transform:translate(-5px,-50%)}}
+body.pax:not(.has) .bus{opacity:.55}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:4px}
+.seg button{height:38px;border:0;border-radius:10px;background:none;color:var(--muted);font:700 13px inherit;font-family:inherit}
+.seg button.on{background:var(--panel2);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .pref{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--bg);border:1px solid var(--line);
   border-radius:14px;padding:12px 14px}
 .pref b{display:block;font-size:15px;font-weight:650}
@@ -259,7 +303,7 @@ body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
   </div>
-  <h1>Dove sei seduto<span>?</span></h1>
+  <h1 id="title">Dove sei seduto<span>?</span></h1>
   <div class="route">
     <div><div class="code" id="rFrom">LEF</div><div class="city" id="rFromCity">Leffe</div></div>
     <div class="mid"><span>IN VIAGGIO</span></div>
@@ -268,6 +312,15 @@ body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:
   </div>
 </div>
 
+<div class="install pax-only" id="install">
+  <b>Mettila nella Home</b>
+  <span>Tocca <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> Condividi e poi <b>Aggiungi alla schermata Home</b>: si aprirà come un'app.</span>
+  <button id="installX" aria-label="Chiudi">✕</button>
+</div>
+<div class="wait pax-only" id="wait">
+  <div class="wdot"></div>
+  <div><b id="waitTitle">In attesa del biglietto</b><span id="waitSub">Quando ti tengono il posto, si illumina qui.</span></div>
+</div>
 <div class="bus" id="bus">
   <div class="windshield"><div class="sign"><em id="signLine">SA</em><b id="signDest">BERGAMO</b></div></div>
   <div class="front">
@@ -281,7 +334,7 @@ body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:
 
 <div class="dock" id="dock">
   <div class="info"><small>IL TUO POSTO</small><b id="dSeat">—</b><em id="dSide"></em></div>
-  <div class="print" id="printBtn" role="button">Stampa
+  <div class="print" id="printBtn" role="button"><span id="printLbl">Stampa</span>
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
   </div>
 </div>
@@ -289,32 +342,42 @@ body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:
 <div class="stage" id="stage">
   <div class="printer" id="printer"><span>SERIANA</span></div>
   <button class="b3d" id="b3d" aria-label="Attiva effetto 3D">3D</button>
+  <div class="linkpill" id="linkpill"></div>
   <div class="slot"><div class="tilt" id="tilt"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas><div class="glare" id="glare"></div></div></div>
   <div class="actions">
     <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
     <div class="big" id="send" role="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M6 9l6-6 6 6M5 21h14"/></svg>
-      <span>Invia a <span class="fname">Benny</span></span>
+      <span id="sendLbl">Invia a <span class="fname">Benny</span></span>
     </div>
   </div>
 </div>
 
 <div class="sheet" id="sheet"><div class="sheet-in">
   <h2>Impostazioni</h2>
+  <div class="sec">ASPETTO</div>
+  <div class="seg" id="seg"><button data-t="auto">Automatico</button><button data-t="light">Chiaro</button><button data-t="dark">Scuro</button></div>
   <div class="sec">ICONA NELLA HOME</div>
   <div class="icons" id="icons"></div>
   <div class="ichint" id="ichint"></div>
   <div class="sec">PREFERENZE</div>
-  <label class="pref"><span><b>Ricorda l'ultimo posto</b><small>All'apertura trovi già selezionato il posto della volta prima</small></span>
+  <label class="pref simo-only" style="margin-bottom:10px"><span><b>Ricorda l'ultimo posto</b><small>All'apertura trovi già selezionato il posto della volta prima</small></span>
     <input type="checkbox" switch id="sRemember"></label>
-  <label class="pref" style="margin-top:10px"><span><b>Biglietto 3D</b><small>Il biglietto si muove quando inclini l'iPhone. Tocca "3D" sul biglietto: iOS chiede il permesso una volta per ogni apertura dell'app</small></span>
+  <label class="pref"><span><b>Biglietto 3D</b><small>Il biglietto si muove quando inclini l'iPhone. Tocca "3D" sul biglietto: iOS chiede il permesso una volta per ogni apertura dell'app</small></span>
     <input type="checkbox" switch id="sTilt"></label>
+  <div class="simo-only">
+  <div class="sec">APP DI <span class="fnameU">BENNY</span></div>
+  <label class="pref"><span><b>Arriva in automatico</b><small>Quando premi Stampa il biglietto compare subito nella sua app, senza mandare niente</small></span>
+    <input type="checkbox" switch id="sAuto"></label>
+  <div class="ichint" style="margin-top:10px">Mandale <b>una volta sola</b> questo link: lo apre in Safari e lo aggiunge alla Home. Copialo dall'app che usi per stampare.
+    <div class="linkbox" id="paxLink"></div><button id="copyPax">Copia link per <span class="fname">Benny</span></button></div>
   <div class="sec">VIAGGIO</div>
   <div class="f"><div><label>Il tuo nome</label><input id="sMe"></div><div><label>Lo mandi a</label><input id="sFriend"></div></div>
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
+  </div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 3.8</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 4.0</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -341,8 +404,12 @@ const cfg = {
   from: store.get("from","LEF"), fromCity: store.get("fromCity","Leffe"),
   to: store.get("to","BGO"), toCity: store.get("toCity","Bergamo")
 };
+// Modalità passeggera: si apre col link ?c=… mandato da Simone (o dall'app nella Home creata da quel link)
+const URLP = new URLSearchParams(location.search);
+const PAX = !!URLP.get("c") && !URLP.get("pass");
+let paxPass = null;
 let remember = store.get("remember", "1") !== "0";
-let mine = remember ? store.get("mySeat", null) : null, shareFile = null, shareBlob = null;
+let mine = (remember && !PAX) ? store.get("mySeat", null) : null, shareFile = null, shareBlob = null;
 const shareCanvas = document.createElement("canvas");   // canvas riusato per l'immagine da inviare
 </script>
 <script>/*TICKET*/</script>
@@ -361,7 +428,7 @@ for (let r = 1; r < LAST; r++){
   bus.append(row);
 }
 const back = mk("div", "row back"); "ABECD".split("").forEach(l => back.append(seatBtn(LAST + l))); bus.append(back);
-bus.addEventListener("click", e => { const b = e.target.closest(".seat"); if (b) select(b.dataset.id); });
+bus.addEventListener("click", e => { if (PAX) return; const b = e.target.closest(".seat"); if (b) select(b.dataset.id); });
 
 function select(id){
   if (mine && seats[mine]) seats[mine].classList.remove("sel");
@@ -407,17 +474,18 @@ function printHaptics(){
 const stage = $("stage");
 // ================= BIGLIETTO 3D =================
 let tiltOn = store.get("tilt", "1") !== "0", tiltGranted = false, gotOrientation = false;
-const T = { tx:0, ty:0, x:0, y:0, base:null, raf:0, run:false };
+// T.tx/ty = inclinazione dal giroscopio, T.px/py = dal dito; il ciclo gira sempre a biglietto stampato
+const T = { tx:0, ty:0, px:0, py:0, x:0, y:0, s:1, base:null, raf:0, run:false, gyro:false, touch:false };
 const clamp = (v, a) => Math.max(-a, Math.min(a, v));
 function askTilt(){            // iOS vuole il permesso, chiesto durante un tocco
   const D = window.DeviceOrientationEvent;
   if (D && typeof D.requestPermission === "function" && !tiltGranted){
     D.requestPermission().then(r => {
       tiltGranted = r === "granted";
-      if (tiltGranted) { stage.classList.remove("can3d"); if (stage.classList.contains("done")) startTilt(); }
+      if (tiltGranted) { stage.classList.remove("can3d"); if (stage.classList.contains("done")) startGyro(); }
       else toast("Senza permesso movimento niente 3D");
     }).catch(() => {});
-  } else tiltGranted = true;
+  } else { tiltGranted = true; startGyro(); }
 }
 function onOrient(e){
   if (e.beta == null) return;
@@ -429,36 +497,58 @@ function onOrient(e){
   T.tx = clamp((e.gamma - T.base.g) * 0.35, 9);
 }
 function onPointer(e){         // senza sensori (computer): segue il puntatore
-  if (gotOrientation) return;
+  if (gotOrientation || T.touch || e.pointerType === "touch") return;
   T.tx = clamp((e.clientX / innerWidth - 0.5) * 16, 8);
   T.ty = clamp(-(e.clientY / innerHeight - 0.5) * 16, 8);
 }
+// ---- il dito: il biglietto "affonda" dal lato in cui lo premi e torna a posto quando lo lasci
+function fingerAt(e){
+  const r = $("tilt").getBoundingClientRect();
+  const nx = clamp(((e.clientX - r.left) / r.width - 0.5) * 2, 1), ny = clamp(((e.clientY - r.top) / r.height - 0.5) * 2, 1);
+  T.px = nx * 13; T.py = -ny * 11;
+}
+function onDown(e){
+  if (!stage.classList.contains("done")) return;
+  T.touch = true; T.s = 0.975; stage.classList.add("touching");
+  try { $("tilt").setPointerCapture(e.pointerId); } catch(_){}
+  fingerAt(e);
+}
+function onMove(e){ if (T.touch) fingerAt(e); }
+function onUp(){ T.touch = false; T.px = T.py = 0; T.s = 1; stage.classList.remove("touching"); }
+$("tilt").addEventListener("pointerdown", onDown);
+$("tilt").addEventListener("pointermove", onMove);
+["pointerup","pointercancel","lostpointercapture"].forEach(t => $("tilt").addEventListener(t, onUp));
+
 function tiltLoop(){
   if (!T.run) return;
-  T.x += (T.tx - T.x) * 0.12; T.y += (T.ty - T.y) * 0.12;
-  $("tilt").style.transform = `rotateX(${T.y.toFixed(2)}deg) rotateY(${T.x.toFixed(2)}deg)`;
-  const g = $("glare"); g.style.setProperty("--gx", (50 + T.x * 5) + "%"); g.style.setProperty("--gy", (25 - T.y * 5) + "%");
+  const k = T.touch ? 0.22 : 0.12;               // il dito risponde più in fretta
+  const gx = T.tx + T.px, gy = T.ty + T.py;
+  T.x += (clamp(gx, 15) - T.x) * k; T.y += (clamp(gy, 13) - T.y) * k;
+  T.cs = (T.cs || 1) + (T.s - (T.cs || 1)) * 0.2;
+  $("tilt").style.transform = `rotateX(${T.y.toFixed(2)}deg) rotateY(${T.x.toFixed(2)}deg) scale(${T.cs.toFixed(3)})`;
+  const g = $("glare"); g.style.setProperty("--gx", (50 + T.x * 4) + "%"); g.style.setProperty("--gy", (25 - T.y * 4) + "%");
   T.raf = requestAnimationFrame(tiltLoop);
 }
 const needsPermission = () => !!(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function");
+function startLoop(){ if (T.run) return; T.run = true; T.x = T.y = 0; tiltLoop(); }
 function offerTilt(){
+  startLoop();                                   // il tocco funziona sempre
   if (!tiltOn) return;
-  if (!needsPermission() || tiltGranted) startTilt();
-  else stage.classList.add("can3d");          // niente popup automatico: lo chiedi tu toccando "3D"
+  if (!needsPermission() || tiltGranted) startGyro();
+  else stage.classList.add("can3d");             // niente popup automatico: lo chiedi tu toccando "3D"
 }
-function startTilt(){
-  if (!tiltOn || T.run) return;
-  T.base = null; T.tx = T.ty = 0; T.run = true;
+function startGyro(){
+  if (!tiltOn || T.gyro) return;
+  T.base = null; T.tx = T.ty = 0; T.gyro = true;
   window.addEventListener("deviceorientation", onOrient);
   stage.addEventListener("pointermove", onPointer);
   stage.classList.add("tilting");
-  tiltLoop();
 }
 function stopTilt(){
-  T.run = false; cancelAnimationFrame(T.raf);
+  T.run = false; T.gyro = false; cancelAnimationFrame(T.raf); onUp();
   window.removeEventListener("deviceorientation", onOrient);
   stage.removeEventListener("pointermove", onPointer);
-  T.x = T.y = 0; $("tilt").style.transform = ""; stage.classList.remove("tilting");
+  T.x = T.y = T.tx = T.ty = 0; T.cs = 1; $("tilt").style.transform = ""; stage.classList.remove("tilting");
 }
 function sizeGlare(){          // la luce copre solo la carta, non i margini trasparenti
   const tk = $("ticket"), w = tk.offsetWidth, k = w / 396, g = $("glare");
@@ -476,15 +566,57 @@ function newPass(){
   const now = new Date(), end = new Date(now); end.setHours(23, 59, 0, 0);
   const min = d => Math.floor(d.getTime() / 60000).toString(36);
   const data = [1, cfg.friend, neighbour(mine), cfg.me, mine, cfg.from, cfg.fromCity, cfg.to, cfg.toCity, min(now), min(end), code].join("~");
-  return { code, url: SITE + "?pass=" + b64u(data) };
+  const raw = b64u(data);
+  return { code, raw, url: SITE + "?pass=" + raw };
+}
+function decodePass(raw){
+  try {
+    const a = unb64u(raw).split("~"); if (a[0] !== "1" || a.length < 12) return null;
+    const [, friend, seat, me, mySeat, from, fromCity, to, toCity, t0, t1, code] = a;
+    return { raw, friend, seat, me, mySeat, from, fromCity, to, toCity, code,
+             t0: new Date(parseInt(t0, 36) * 60000), t1: new Date(parseInt(t1, 36) * 60000) };
+  } catch(e){ return null; }
+}
+
+// ================= COLLEGAMENTO CON L'APP DI BENNY (ntfy.sh) =================
+// Nessun server nostro: il biglietto passa da ntfy.sh, un servizio gratuito di messaggi push.
+// Il "canale" è un codice casuale: lo conoscono solo le due app.
+const NTFY = "https://ntfy.sh";
+let topic = store.get("topic", null);
+if (!topic){ const A = "abcdefghijkmnpqrstuvwxyz23456789", r = new Uint32Array(16); crypto.getRandomValues(r);
+  topic = "postobus-" + Array.from(r, v => A[v % A.length]).join(""); store.set("topic", topic); }
+let autoSend = store.get("autoSend", "1") !== "0";
+const paxURL = () => SITE + "?c=" + topic;
+function setPill(cls, text){ const p = $("linkpill"); p.className = "linkpill on " + cls; p.innerHTML = "<i></i>" + text; }
+function publishTicket(pass){
+  setPill("wip", "Invio all'app di " + cfg.friend + "…");
+  const body = JSON.stringify({
+    topic, title: `${cfg.me} ti ha tenuto il posto`, tags: ["bus"],
+    message: `Posto ${neighbour(mine)} · accanto a ${cfg.me} (${mine}) · ${cfg.from} → ${cfg.to}`,
+    click: paxURL() + "&t=" + pass.raw
+  });
+  // corpo semplice (text/plain): niente richieste preliminari, funziona da qualsiasi sito
+  fetch(NTFY + "/", { method: "POST", body })
+    .then(r => { if (!r.ok) throw 0; setPill("ok", "Arrivato a " + cfg.friend); })
+    .catch(() => setPill("ko", "Non arrivato: usa Invia"));
 }
 
 function printTicket(){
-  if (!mine) return;
+  if (!mine && !PAX) return;
+  if (PAX && !paxPass) return;
   const tk = $("ticket");
   stopTilt();
-  const pass = newPass();                 // QR diverso a ogni stampa
-  const tOpt = { mine, ...cfg, qr: pass.url, code: pass.code };
+  let tOpt;
+  $("linkpill").className = "linkpill";
+  if (PAX){                               // lato Benny: ristampa il biglietto ricevuto
+    const P = paxPass;
+    tOpt = { mine: P.mySeat, me: P.me, friend: P.friend, from: P.from, fromCity: P.fromCity, to: P.to, toCity: P.toCity,
+             qr: SITE + "?pass=" + P.raw, code: P.code };
+  } else {
+    const pass = newPass();               // QR diverso a ogni stampa
+    tOpt = { mine, ...cfg, qr: pass.url, code: pass.code };
+    if (autoSend) publishTicket(pass);
+  }
   try {
     // 1) biglietto a schermo, disegnato direttamente nel canvas della pagina (nessun caricamento immagine)
     drawTicket(tOpt, { bg:false, canvas: tk });
@@ -512,10 +644,10 @@ function printTicket(){
   shareFile = null; shareBlob = null;
   setTimeout(() => {
     try {
-      drawTicket(tOpt, { canvas: shareCanvas });
+      drawTicket(tOpt, { canvas: shareCanvas, bg:false, shadow:false, margin:0 });   // solo il biglietto, sfondo trasparente
       shareCanvas.toBlob(b => {
         shareBlob = b;
-        try { shareFile = new File([b], `carta-imbarco-${neighbour(mine)}.png`, { type:"image/png" }); } catch(e){}
+        try { shareFile = new File([b], `carta-imbarco-${PAX ? paxPass.seat : neighbour(mine)}.png`, { type:"image/png" }); } catch(e){}
       }, "image/png");
     } catch (e) { toast("Errore immagine: " + e.message); }
   }, 120);
@@ -545,12 +677,17 @@ async function sendTicket(){
 
 // ================= IMPOSTAZIONI =================
 const fields = { sMe:"me", sFriend:"friend", sFrom:"from", sFromCity:"fromCity", sTo:"to", sToCity:"toCity" };
-$("gear").onclick = () => { for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; $("sTilt").checked = tiltOn; paintIcons(); $("sheet").classList.add("on"); };
+function paintSeg(){ const t = themeChoice(); document.querySelectorAll("#seg button").forEach(b => b.classList.toggle("on", b.dataset.t === t)); }
+$("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; setTheme(b.dataset.t); paintSeg(); haptic(8); });
+$("gear").onclick = () => { paintSeg(); for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; $("sAuto").checked = autoSend; $("paxLink").textContent = paxURL();
+  document.querySelectorAll(".fnameU").forEach(e => e.textContent = cfg.friend.toUpperCase()); $("sTilt").checked = tiltOn; paintIcons(); $("sheet").classList.add("on"); };
 $("sTilt").addEventListener("change", e => {
   tiltOn = e.target.checked; store.set("tilt", tiltOn ? "1" : "0");
   if (tiltOn) askTilt();
   toast(tiltOn ? "Biglietto 3D attivo" : "Biglietto 3D spento");
 });
+$("sAuto").addEventListener("change", e => { autoSend = e.target.checked; store.set("autoSend", autoSend ? "1" : "0"); });
+$("copyPax").onclick = async () => { try { await navigator.clipboard.writeText(paxURL()); toast("Link copiato: mandalo a " + cfg.friend); } catch(e){ toast("Tieni premuto sul link per copiarlo"); } };
 $("sRemember").addEventListener("change", e => {
   remember = e.target.checked; store.set("remember", remember ? "1" : "0");
   toast(remember ? "Ricorderò il tuo posto" : "Ogni volta partirai da zero");
@@ -676,10 +813,86 @@ function showVerify(raw){
   $("vBack").onclick = () => { clearInterval(v._iv); v.className = "verify"; document.body.classList.remove("verifying"); window.scrollTo(0, 0);
     try { history.replaceState(null, "", location.pathname); } catch(e){} };
 }
+// ================= APP DI BENNY =================
+function paxRender(P, fresh){
+  const valid = P && new Date() <= P.t1;
+  document.querySelectorAll(".seat.sel,.seat.him").forEach(s => { s.classList.remove("sel", "him"); s.firstChild.nodeValue = s.dataset.id; });
+  document.querySelectorAll(".door.entry").forEach(d => d.classList.remove("use"));
+  if (!valid){
+    paxPass = null; document.body.classList.remove("has"); $("dock").classList.remove("on");
+    document.querySelectorAll(".fname").forEach(e => e.textContent = P ? P.me : "—");
+    $("title").innerHTML = "Il tuo posto<span>?</span>";
+    if (P) $("waitSub").textContent = `L'ultimo era il ${P.seat}. Quando ${P.me} stampa il prossimo biglietto, il tuo posto si illumina qui.`;
+    return;
+  }
+  paxPass = P; document.body.classList.add("has");
+  const her = seats[P.seat], him = seats[P.mySeat];
+  if (her){ her.classList.add("sel"); her.firstChild.nodeValue = P.seat; }
+  if (him){ him.classList.add("him"); him.firstChild.nodeValue = (P.me[0] || "S").toUpperCase(); }
+  const front = parseInt(P.seat, 10) <= 6;
+  const doors = document.querySelectorAll(".door.entry"); (front ? doors[0] : doors[1])?.classList.add("use");
+  $("title").innerHTML = `Il tuo posto è il <span style="color:var(--yel)">${P.seat}</span>`;
+  $("rFrom").textContent = P.from; $("rTo").textContent = P.to; $("rFromCity").textContent = P.fromCity; $("rToCity").textContent = P.toCity;
+  $("rTime").textContent = P.t0.toLocaleTimeString("it-IT", { hour:"2-digit", minute:"2-digit" });
+  document.querySelectorAll(".fname").forEach(e => e.textContent = P.me);
+  $("signDest").textContent = P.toCity.toUpperCase().slice(0, 12);
+  $("dSeat").textContent = P.seat; $("dSide").textContent = SIDE[P.seat.slice(-1)];
+  $("dock").classList.add("on");
+  if (fresh) toast(`🚌 ${P.me} ti ha tenuto il ${P.seat}`);
+  setTimeout(() => her && her.scrollIntoView({ behavior:"smooth", block:"center" }), fresh ? 350 : 600);
+}
+function paxTake(raw, fresh){
+  const P = decodePass(raw); if (!P) return;
+  if (paxPass && paxPass.raw === raw) return;
+  if (paxPass && P.t0 < paxPass.t0) return;          // tengo sempre il più recente
+  store.set("paxLast", raw); paxRender(P, fresh);
+}
+function paxFromEvent(m){
+  try { const u = new URL(m.click); const t = u.searchParams.get("t"); if (t) return t; } catch(e){}
+  return null;
+}
+function paxListen(){
+  const c = URLP.get("c");
+  // 1) ultimi messaggi (ntfy li tiene 12 ore)
+  fetch(`${NTFY}/${c}/json?poll=1&since=12h`).then(r => r.text()).then(txt => {
+    const msgs = txt.trim().split("\n").filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(m => m && m.event === "message");
+    const last = msgs.reverse().map(paxFromEvent).find(Boolean);
+    if (last) paxTake(last, false);
+    $("waitTitle").textContent = "In attesa del biglietto";
+  }).catch(() => { $("waitTitle").textContent = "Senza connessione"; });
+  // 2) in diretta mentre l'app è aperta
+  try {
+    if (window._es) window._es.close();
+    const es = new EventSource(`${NTFY}/${c}/sse`);
+    es.onmessage = ev => { try { const m = JSON.parse(ev.data); const t = m.event === "message" && paxFromEvent(m); if (t){ paxTake(t, true); haptic(30); } } catch(e){} };
+    window._es = es;
+  } catch(e){}
+}
+function paxInit(){
+  document.body.classList.add("pax");
+  $("printLbl").textContent = "Biglietto";
+  $("sendLbl").textContent = "Salva o condividi";
+  $("title").innerHTML = "Il tuo posto<span>?</span>";
+  document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute("content", "Il mio posto");
+  document.title = "Il mio posto";
+  const standalone = navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  if (standalone || store.get("installSeen") === "1") $("install").style.setProperty("display", "none", "important");
+  $("installX").onclick = () => { store.set("installSeen", "1"); $("install").style.setProperty("display", "none", "important"); };
+  const t = URLP.get("t"); const saved = store.get("paxLast", null);
+  if (saved) paxTake(saved, false);
+  if (t) paxTake(t, true);
+  if (!paxPass) paxRender(saved ? decodePass(saved) : null, false);
+  paxListen();
+  document.addEventListener("visibilitychange", () => { if (!document.hidden){ paxListen(); if (paxPass) paxRender(paxPass, false); } });
+  // tolgo &t= dall'indirizzo ma tengo ?c= (serve all'icona nella Home)
+  try { history.replaceState(null, "", location.pathname + "?c=" + encodeURIComponent(URLP.get("c")) + (URLP.get("icon") ? "&icon=" + URLP.get("icon") : "")); } catch(e){}
+}
+
 const passParam = (location.search.match(/[?&]pass=([A-Za-z0-9_-]+)/) || [])[1];
 if (passParam){ document.body.classList.add("verifying"); showVerify(passParam); }
 
 paintHeader();
+if (PAX) paxInit();
 if (mine && seats[mine]) select(mine); else mine = null;
 </script>
 </body>

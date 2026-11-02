@@ -145,7 +145,7 @@ function drawTicket(o, opt = {}) {
   // o: { mine, me, friend, from, fromCity, to, toCity }
   const her = neighbour(o.mine), row = +o.mine.slice(0, -1);
   const half = row <= 6 ? "front" : "rear";
-  const S = 3, M = 18, TW = 360, X = M;
+  const S = 3, M = opt.margin ?? 18, TW = 360, X = M;          // margin 0 = solo il biglietto
   const cabH = cabinHeight(half);
   const H_HEAD = 68, H_ROUTE = 92, H_FIELDS = 116, H_SEAT = 100, H_MAPHEAD = 34, H_STUB = 118;
   const H_MAP = H_MAPHEAD + cabH + 22;
@@ -159,7 +159,7 @@ function drawTicket(o, opt = {}) {
   if (withBg) { c.fillStyle = bg; c.fillRect(0, 0, W, H); }
 
   // corpo biglietto
-  c.save(); c.shadowColor = "rgba(5,22,77,.18)"; c.shadowBlur = 24; c.shadowOffsetY = 8;
+  c.save(); if (opt.shadow !== false) { c.shadowColor = "rgba(5,22,77,.18)"; c.shadowBlur = 24; c.shadowOffsetY = 8; }
   rrect(c, X, M, TW, TH, 22); c.fillStyle = "#fff"; c.fill(); c.restore();
 
   // header blu
