@@ -251,13 +251,29 @@ body.verifying .verify{position:static;display:block;min-height:100dvh;overflow:
 body.pax .pax-only{display:flex !important}
 body.pax .simo-only{display:none !important}
 .linkbox{font:600 11px/1.35 ui-monospace,"SF Mono",Menlo,monospace;color:var(--ink);background:var(--panel2);border-radius:10px;padding:8px 10px;margin-top:8px;word-break:break-all;-webkit-user-select:text;user-select:text}
-.linkpill{position:absolute;left:16px;top:calc(var(--st) + 12px);z-index:6;height:34px;padding:0 13px;border-radius:17px;display:flex;align-items:center;gap:8px;
-  border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:12px;font-weight:700;opacity:0;transition:opacity .3s}
-.linkpill.on{opacity:1}
-.linkpill i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
-.linkpill.ok{color:var(--ink)} .linkpill.ok i{background:#30D158;box-shadow:0 0 8px #30D158}
-.linkpill.wip i{background:var(--yel);animation:blink .6s steps(2) infinite}
-.linkpill.ko i{background:#FF453A}
+/* destinatario: avatar con l'iniziale; il biglietto ci "vola dentro" e compare la spunta */
+.peer{position:absolute;left:16px;top:calc(var(--st) + 10px);z-index:6;display:flex;align-items:center;gap:10px;opacity:0;
+  transform:translateY(-8px);transition:opacity .35s,transform .35s;pointer-events:none}
+.peer.on{opacity:1;transform:none;pointer-events:auto}
+.stage:not(.done) .peer{opacity:0;pointer-events:none}   /* compare a stampa finita, non sopra la stampante */
+.peer .av{position:relative;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FFC23D,#FFAD00);color:var(--navy);
+  display:flex;align-items:center;justify-content:center;font-weight:850;font-size:16px;box-shadow:0 0 0 2px var(--bg)}
+.peer .av::before{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid transparent;transition:border-color .3s}
+.peer.wip .av::before{border-color:var(--yel) transparent transparent transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.peer .bd{position:absolute;right:-3px;bottom:-3px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--bg);transform:scale(0);transition:transform .35s cubic-bezier(.2,1.8,.4,1)}
+.peer .bd svg{width:10px;height:10px}
+.peer.ok .bd{background:#30D158;transform:scale(1)}
+.peer.ko .bd{background:#FF453A;transform:scale(1)}
+.peer.ok .av{animation:avpop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes avpop{40%{transform:scale(1.18)}}
+.peer .tx{font-size:12px;line-height:1.25;color:var(--muted);font-weight:600;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;
+  transition:max-width .45s,opacity .3s}
+.peer .tx b{display:block;color:var(--ink);font-size:13px}
+.peer.show .tx{max-width:180px;opacity:1}
+.fly{position:fixed;z-index:7;pointer-events:none;border-radius:6px;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3);
+  border-top:7px solid #05164D;border-bottom:3px solid #FFAD00}
 /* lato passeggera */
 .install{max-width:460px;margin:0 auto 14px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 40px 12px 14px;
   flex-direction:column;gap:4px;position:relative;font-size:12.5px;color:var(--muted);line-height:1.45}
@@ -319,7 +335,7 @@ body.pax:not(.has) .bus{opacity:.55}
 </div>
 <div class="wait pax-only" id="wait">
   <div class="wdot"></div>
-  <div><b id="waitTitle">In attesa del biglietto</b><span id="waitSub">Quando ti tengono il posto, si illumina qui.</span></div>
+  <div><b id="waitTitle">In attesa del biglietto</b><span id="waitSub">Quando ti tengono il posto, si illumina qui.</span><small id="waitCode" style="display:block;margin-top:6px;font-size:11px;color:var(--dim)"></small></div>
 </div>
 <div class="bus" id="bus">
   <div class="windshield"><div class="sign"><em id="signLine">SA</em><b id="signDest">BERGAMO</b></div></div>
@@ -342,7 +358,7 @@ body.pax:not(.has) .bus{opacity:.55}
 <div class="stage" id="stage">
   <div class="printer" id="printer"><span>SERIANA</span></div>
   <button class="b3d" id="b3d" aria-label="Attiva effetto 3D">3D</button>
-  <div class="linkpill" id="linkpill"></div>
+  <div class="peer" id="peer"><div class="av"><span id="peerIni">B</span><i class="bd" id="peerBd"></i></div><div class="tx" id="peerTx"></div></div>
   <div class="slot"><div class="tilt" id="tilt"><canvas class="ticket" id="ticket" aria-label="Carta d'imbarco"></canvas><div class="glare" id="glare"></div></div></div>
   <div class="actions">
     <button class="ghost" id="closeStage" aria-label="Chiudi">✕</button>
@@ -370,14 +386,14 @@ body.pax:not(.has) .bus{opacity:.55}
   <label class="pref"><span><b>Arriva in automatico</b><small>Quando premi Stampa il biglietto compare subito nella sua app, senza mandare niente</small></span>
     <input type="checkbox" switch id="sAuto"></label>
   <div class="ichint" style="margin-top:10px">Mandale <b>una volta sola</b> questo link: lo apre in Safari e lo aggiunge alla Home. Copialo dall'app che usi per stampare.
-    <div class="linkbox" id="paxLink"></div><button id="copyPax">Copia link per <span class="fname">Benny</span></button></div>
+    <div class="linkbox" id="paxLink"></div><div style="margin-top:6px">Codice del collegamento: <b id="paxCode"></b></div><button id="copyPax">Copia link per <span class="fname">Benny</span></button></div>
   <div class="sec">VIAGGIO</div>
   <div class="f"><div><label>Il tuo nome</label><input id="sMe"></div><div><label>Lo mandi a</label><input id="sFriend"></div></div>
   <div class="f"><div><label>Partenza</label><input id="sFrom" class="code" maxlength="3"></div><div><label>Città</label><input id="sFromCity"></div></div>
   <div class="f"><div><label>Arrivo</label><input id="sTo" class="code" maxlength="3"></div><div><label>Città</label><input id="sToCity"></div></div>
   </div>
   <button class="big" id="saveSet" style="margin-top:8px;width:100%">Fatto</button>
-  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 4.0</p>
+  <p style="text-align:center;color:var(--dim);font-size:11px;margin:14px 0 0">Posto Bus · versione 4.1</p>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -582,23 +598,67 @@ function decodePass(raw){
 // Nessun server nostro: il biglietto passa da ntfy.sh, un servizio gratuito di messaggi push.
 // Il "canale" è un codice casuale: lo conoscono solo le due app.
 const NTFY = "https://ntfy.sh";
-let topic = store.get("topic", null);
-if (!topic){ const A = "abcdefghijkmnpqrstuvwxyz23456789", r = new Uint32Array(16); crypto.getRandomValues(r);
-  topic = "postobus-" + Array.from(r, v => A[v % A.length]).join(""); store.set("topic", topic); }
+// Canale ricavato dal nome di chi lo riceve: è lo stesso in Safari e nell'app della Home
+// (prima era casuale e salvato nel telefono: due copie dell'app = due canali diversi)
+function hash53(str, seed){ let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0; i < str.length; i++){ const c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
+const topicFor = name => { const k = "Simo2k11-ITA|posto-bus|" + name.trim().toLowerCase(); return "postobus-" + hash53(k, 7) + hash53(k, 91); };
+const topicNow = () => topicFor(cfg.friend);
+const shortCode = t => t.slice(-4).toUpperCase();
 let autoSend = store.get("autoSend", "1") !== "0";
-const paxURL = () => SITE + "?c=" + topic;
-function setPill(cls, text){ const p = $("linkpill"); p.className = "linkpill on " + cls; p.innerHTML = "<i></i>" + text; }
+const paxURL = () => SITE + "?c=" + topicNow();
+
+const ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_KO = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M12 6v8M12 18.5v.5"/></svg>';
+let peerState = "", peerTimer = 0;
+function setPeer(state){
+  const p = $("peer"); peerState = state;
+  $("peerIni").textContent = (cfg.friend[0] || "B").toUpperCase();
+  $("peerBd").innerHTML = state === "ok" ? ICON_OK : state === "ko" ? ICON_KO : "";
+  const t = { wip: ["In consegna…", "all'app di " + cfg.friend], ok: ["Consegnato", "nell'app di " + cfg.friend], ko: ["Non consegnato", "tocca qui per riprovare"] }[state];
+  $("peerTx").innerHTML = t ? `<b>${t[0]}</b>${t[1]}` : "";
+  p.className = "peer on " + state + (state ? " show" : "");
+  clearTimeout(peerTimer);
+  if (state === "ok") peerTimer = setTimeout(() => p.classList.remove("show"), 2600);   // resta solo l'avatar con la spunta
+}
+$("peer").onclick = () => {
+  if (peerState === "ko" && lastPass) publishTicket(lastPass);
+  else { $("peer").classList.add("show"); clearTimeout(peerTimer); peerTimer = setTimeout(() => $("peer").classList.remove("show"), 2200); }
+};
+function flyToPeer(){                    // un mini biglietto parte dalla carta e "entra" nell'avatar
+  const from = $("ticket").getBoundingClientRect(), to = $("peer").querySelector(".av").getBoundingClientRect();
+  if (!from.width) return;
+  const f = document.createElement("div"); f.className = "fly";
+  const w = 54, h = 92;
+  Object.assign(f.style, { left: (from.left + from.width / 2 - w / 2) + "px", top: (from.top + from.height / 2 - h / 2) + "px", width: w + "px", height: h + "px" });
+  document.body.append(f);
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2);
+  f.animate([
+    { transform: "translate(0,0) scale(1) rotate(0)", opacity: 0 },
+    { transform: "translate(0,-10px) scale(1.05) rotate(-4deg)", opacity: 1, offset: .15 },
+    { transform: `translate(${dx}px,${dy}px) scale(.12) rotate(-25deg)`, opacity: .9 }
+  ], { duration: 750, easing: "cubic-bezier(.5,0,.3,1)" }).onfinish = () => f.remove();
+}
+let lastPass = null, pendingOk = false;
 function publishTicket(pass){
-  setPill("wip", "Invio all'app di " + cfg.friend + "…");
-  const body = JSON.stringify({
-    topic, title: `${cfg.me} ti ha tenuto il posto`, tags: ["bus"],
+  lastPass = pass; pendingOk = false;
+  setPeer("wip");
+  const topic = topicNow(), legacy = store.get("topic", null);
+  const msg = t => JSON.stringify({
+    topic: t, title: `${cfg.me} ti ha tenuto il posto`, tags: ["bus"],
     message: `Posto ${neighbour(mine)} · accanto a ${cfg.me} (${mine}) · ${cfg.from} → ${cfg.to}`,
-    click: paxURL() + "&t=" + pass.raw
+    click: SITE + "?c=" + t + "&t=" + pass.raw
   });
   // corpo semplice (text/plain): niente richieste preliminari, funziona da qualsiasi sito
-  fetch(NTFY + "/", { method: "POST", body })
-    .then(r => { if (!r.ok) throw 0; setPill("ok", "Arrivato a " + cfg.friend); })
-    .catch(() => setPill("ko", "Non arrivato: usa Invia"));
+  fetch(NTFY + "/", { method: "POST", body: msg(topic) })
+    .then(r => { if (!r.ok) throw 0;
+      // la spunta arriva quando il biglietto ha finito di stamparsi, insieme al volo
+      if (stage.classList.contains("done")) { flyToPeer(); setTimeout(() => { setPeer("ok"); haptic(20); }, 700); } else pendingOk = true; })
+    .catch(() => setPeer("ko"));
+  if (legacy && legacy !== topic) fetch(NTFY + "/", { method: "POST", body: msg(legacy) }).catch(() => {});   // vecchio link, se Benny ha ancora quello
 }
 
 function printTicket(){
@@ -607,7 +667,7 @@ function printTicket(){
   const tk = $("ticket");
   stopTilt();
   let tOpt;
-  $("linkpill").className = "linkpill";
+  $("peer").className = "peer"; pendingOk = false;
   if (PAX){                               // lato Benny: ristampa il biglietto ricevuto
     const P = paxPass;
     tOpt = { mine: P.mySeat, me: P.me, friend: P.friend, from: P.from, fromCity: P.fromCity, to: P.to, toCity: P.toCity,
@@ -652,7 +712,8 @@ function printTicket(){
     } catch (e) { toast("Errore immagine: " + e.message); }
   }, 120);
 }
-function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); sizeGlare(); offerTilt(); }
+function finish(){ stage.classList.remove("printing"); stage.classList.add("done"); sizeGlare(); offerTilt();
+  if (pendingOk){ pendingOk = false; setTimeout(() => { flyToPeer(); setTimeout(() => { setPeer("ok"); haptic(20); }, 700); }, 250); } }
 $("b3d").onclick = () => askTilt();
 $("ticket").addEventListener("click", () => { if (stage.classList.contains("printing")) { clearTimeout(stage._t); hTimers.forEach(clearTimeout); haptic(35); finish(); } });
 $("printBtn").append(hz());
@@ -679,7 +740,7 @@ async function sendTicket(){
 const fields = { sMe:"me", sFriend:"friend", sFrom:"from", sFromCity:"fromCity", sTo:"to", sToCity:"toCity" };
 function paintSeg(){ const t = themeChoice(); document.querySelectorAll("#seg button").forEach(b => b.classList.toggle("on", b.dataset.t === t)); }
 $("seg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; setTheme(b.dataset.t); paintSeg(); haptic(8); });
-$("gear").onclick = () => { paintSeg(); for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; $("sAuto").checked = autoSend; $("paxLink").textContent = paxURL();
+$("gear").onclick = () => { paintSeg(); for (const k in fields) $(k).value = cfg[fields[k]]; $("sRemember").checked = remember; $("sAuto").checked = autoSend; $("paxLink").textContent = paxURL(); $("paxCode").textContent = shortCode(topicNow());
   document.querySelectorAll(".fnameU").forEach(e => e.textContent = cfg.friend.toUpperCase()); $("sTilt").checked = tiltOn; paintIcons(); $("sheet").classList.add("on"); };
 $("sTilt").addEventListener("change", e => {
   tiltOn = e.target.checked; store.set("tilt", tiltOn ? "1" : "0");
@@ -851,8 +912,10 @@ function paxFromEvent(m){
   try { const u = new URL(m.click); const t = u.searchParams.get("t"); if (t) return t; } catch(e){}
   return null;
 }
-function paxListen(){
+function paxListen(live = true){
   const c = URLP.get("c");
+  const now = new Date().toLocaleTimeString("it-IT", { hour:"2-digit", minute:"2-digit" });
+  $("waitCode").textContent = "Codice collegamento " + shortCode(c) + " · controllato alle " + now;
   // 1) ultimi messaggi (ntfy li tiene 12 ore)
   fetch(`${NTFY}/${c}/json?poll=1&since=12h`).then(r => r.text()).then(txt => {
     const msgs = txt.trim().split("\n").filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(m => m && m.event === "message");
@@ -861,7 +924,7 @@ function paxListen(){
     $("waitTitle").textContent = "In attesa del biglietto";
   }).catch(() => { $("waitTitle").textContent = "Senza connessione"; });
   // 2) in diretta mentre l'app è aperta
-  try {
+  if (live) try {
     if (window._es) window._es.close();
     const es = new EventSource(`${NTFY}/${c}/sse`);
     es.onmessage = ev => { try { const m = JSON.parse(ev.data); const t = m.event === "message" && paxFromEvent(m); if (t){ paxTake(t, true); haptic(30); } } catch(e){} };
@@ -883,6 +946,7 @@ function paxInit(){
   if (t) paxTake(t, true);
   if (!paxPass) paxRender(saved ? decodePass(saved) : null, false);
   paxListen();
+  setInterval(() => { if (!document.hidden) paxListen(false); }, 30000);   // riprova ogni 30 s, se la diretta di iOS si addormenta
   document.addEventListener("visibilitychange", () => { if (!document.hidden){ paxListen(); if (paxPass) paxRender(paxPass, false); } });
   // tolgo &t= dall'indirizzo ma tengo ?c= (serve all'icona nella Home)
   try { history.replaceState(null, "", location.pathname + "?c=" + encodeURIComponent(URLP.get("c")) + (URLP.get("icon") ? "&icon=" + URLP.get("icon") : "")); } catch(e){}
